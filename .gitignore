@@ -1,0 +1,13 @@
+# Build
+.bloop
+.bsp
+.metals
+target/
+metals.sbt
+
+# Project
+.vscode
+
+# Data
+src/main/resources/
+src/202*/
