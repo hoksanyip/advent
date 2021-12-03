@@ -2,44 +2,39 @@ package advent
 
 import cats._
 import cats.implicits._
-import cats.data.Semigroup
 import cats.effect.{IO, IOApp}
 import cats.effect.unsafe.implicits.global
+import scala.annotation.tailrec
 import fs2.Stream
 
-object DayXX extends IOApp.Simple {
+@tailrec
+def reduceToCommon(f: (Double, Double) => Boolean)(acc: Int, m: Int, list: List[Int]): Int =
+  val mValue = math.pow(2, m).toInt
+  val (x, y) = list.partition(_ >= mValue)
+  if(m < 0) // If all binary position has been parsed, show result
+    acc
+  else if(list.size == 1) // If only 1 option is left, return that
+    acc + list(0)
+  else if(f(x.size, 0.5 * list.size)) // Use Ordering function to select majority / minority method
+    reduceToCommon(f)(acc + mValue, m - 1, x.map(_ - mValue))
+  else // Otherwise, use the other option
+    reduceToCommon(f)(acc, m - 1, y)
+
+object Day03 extends IOApp.Simple {
   val sourceFile = "day03.txt"
 
-  case class Bin(values: List[Int])
-  object Bin {
-    def apply(text: String): Bin =
-      val bins = text.toList.map(_.toString.toInt)
-      val sign = bins.map(_ match {case 0 => -1 case 1 => 1})
-      Bin(sign)
-    
-    def unapply(bin: Bin): Int =
-      val bins = bin.values.map(x => if(x > 0) 1 else 0)
-      val text = bins.mkString
-      Integer.parseInt(text, 2)
-    
-    def flip(bin: Bin): Bin = Bin(bin.values.map(_ * -1))
-  }
-
-  implicit val semigroupalBin: Semigroup[Bin] = new Semigroup[Bin] {
-    def combine(x: Bin, y: Bin): Bin =
-      Bin((x.values, y.values).parTupled.map(_ + _))
-  }
-
-  def parseLine(line: String): Bin = Bin(line)
-  def filterLines(content: Stream[IO, Bin]): Stream[IO, Bin] = content
-    .reduce(_ |+| _)
-  def processLines(stream: Stream[IO, Bin]): IO[(Int, Int)] = stream
-    .compile
-    .last.map(_.get)
-    .map(b => (Bin.unapply(b), (Bin.unapply compose Bin.flip)(b)))
+  def parseLine(line: String): Int = Integer.parseInt(line, 2)
+  def filterLines(content: Stream[IO, Int]): Stream[IO, Int] = content
+  def processLines(stream: Stream[IO, Int]): IO[(Int, Int)] =
+    for {
+      l <- stream.compile.toList
+      n = math.ceil(l.map(math.log(_) / math.log(2)).reduce(math.max)).toInt
+      oxygen = reduceToCommon(Ordering[Double].gteq)(0, n - 1, l)
+      scrubber = reduceToCommon(Ordering[Double].lt)(0, n - 1, l)
+    } yield (oxygen, scrubber)
 
   def showOutput(result: (Int, Int)): IO[Unit] =
-    IO.println(s"Gamma: ${result._1}, Epsilon: ${result._2}, Power: ${result._1 * result._2}")
+    IO.println(s"Oxygen: ${result._1}, Scrubber: ${result._2}, Life: ${result._1 * result._2}")
 
   val lines = AdventCode.readContent(sourceFile)
   val content = lines.through(AdventCode.parseLines(parseLine))
