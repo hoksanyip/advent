@@ -1,15 +1,10 @@
-package advent
-
 import cats._
 import cats.implicits._
 import cats.effect.IO
 import fs2.{Stream, Pipe, text, io}
-import fs2.io.file.{Files, Path}
-import java.io.InputStream
 import scala.util.Try
-import scala.io.Source
 
-object AdventCode {
+object Parser {
 
   /** Read content from resource file.
     *
@@ -32,10 +27,7 @@ object AdventCode {
   def parseLines[A](parseLine: String => A): Pipe[IO, String, A] = { stream =>
     stream
       .map(i => Try(parseLine(i)).toEither)
-      .evalTap(_ match {
-        case Left(x) => IO.println(x.toString)
-        case _       => IO {}
-      })
+      .evalTap(_.fold(x => IO.println(x.toString), _ => IO {}))
       .filter(_.isRight)
       .map(_.toOption.get)
   }

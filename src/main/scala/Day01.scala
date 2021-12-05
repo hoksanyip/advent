@@ -1,5 +1,3 @@
-package advent
-
 import cats.effect.{IO, IOApp}
 import cats.effect.unsafe.implicits.global
 import fs2.Stream
@@ -21,8 +19,8 @@ object Day01 extends IOApp.Simple {
   def showOutput(count: Long): IO[Unit] =
     IO.println(s"Number of increases: $count")
 
-  val lines = AdventCode.readContent(sourceFile)
-  val content = lines.through(AdventCode.parseLines(parseLine))
+  val lines = Parser.readContent(sourceFile)
+  val content = lines.through(Parser.parseLines(parseLine))
   val filtered = filterLines(content)
   val result = processLines(filtered)
   val run = result.flatMap(showOutput)
