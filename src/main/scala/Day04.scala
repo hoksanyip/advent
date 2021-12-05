@@ -13,22 +13,27 @@ object Day04 extends IOApp.Simple {
   case class Draws(values: List[Int]) extends GameData
   case class Board(rows: List[Row]) extends GameData
   object Game {
-    /** Check if draws has generated a bingo (1 sequence) **/
-    def checkAll(board: Board, draws: List[Int]): Boolean =
-      def checkRow(board: Board, draws: List[Int]): Boolean =
-        board.rows.map(row => row.map(draws.contains).reduce(_ & _)).reduce(_ | _)
-      checkRow(board, draws) || checkRow(Board(board.rows.transpose), draws)
 
-    /** Iterate until bingo **/
-    @tailrec
-    def iterate(board: Board, drawn: List[Int], toDraw: List[Int]): List[Int] =
-      if(checkAll(board, drawn)) drawn
-      else if (toDraw.size == 0) List.empty
-      else iterate(board, drawn :+ toDraw.head, toDraw.tail)
+    /** Check if draws has generated a bingo (1 sequence) * */
+    def validate(board: Board, draws: List[Int]): Boolean =
+      def validateRow(board: Board, draws: List[Int]): Boolean =
+        board.rows.map(row => row.map(draws.contains).reduce(_ && _)).reduce(_ || _)
+      validateRow(board, draws) || validateRow(Board(board.rows.transpose), draws)
 
-    /** Find unmarked numbers **/
-    def unmarked(board: Board, drawn: List[Int]): List[Int] =
+    /** Find unmarked numbers * */
+    def calculate(board: Board, drawn: List[Int]): List[Int] =
       (board.rows.flatten.toSet -- drawn.toSet).toList
+
+    /** Find first draw with bingo * */
+    def run(draws: Draws, board: Board): (Int, Int) =
+      @tailrec
+      def iterate(board: Board, drawn: List[Int], toDraw: List[Int]): List[Int] =
+        if (validate(board, drawn)) drawn
+        else if (toDraw.size == 0) List.empty
+        else iterate(board, drawn :+ toDraw.head, toDraw.tail)
+      val winningDraws = iterate(board, List.empty, draws.values)
+      val score = calculate(board, winningDraws).sum * winningDraws.last
+      (winningDraws.size, score)
   }
 
   def parseLine(line: List[String], idx: Long): GameData = idx match {
@@ -38,24 +43,20 @@ object Day04 extends IOApp.Simple {
   def filterLines(content: Stream[IO, GameData]): Stream[IO, (Draws, Board)] =
     content
       .mapAccumulate(Draws(List.empty))((_, _) match {
-        case (_, data: Draws) => (data, Board(List.empty))
+        case (_, data: Draws)          => (data, Board(List.empty))
         case (acc: Draws, data: Board) => (acc, data)
-        case _ => (Draws(List.empty), Board(List.empty))
+        case _                         => (Draws(List.empty), Board(List.empty))
       })
-      .filter(_._2.rows.size > 0)
+      .drop(1)
   def processLines(stream: Stream[IO, (Draws, Board)]): IO[Int] =
     for {
       boards <- stream.compile.toList
-      scores = boards.map((draws, board) =>
-        val winningDraws = Game.iterate(board, List.empty, draws.values)
-        val score = Game.unmarked(board, winningDraws).sum * winningDraws.last
-        (winningDraws.size, score)
-      )
+      scores = boards.map(Game.run)
       firstWin = scores.map(_._1).max
       winningBoard = scores.filter(_._1 == firstWin).headOption.get
     } yield (winningBoard._2)
 
-  def showOutput(result: Int): IO[Unit] = 
+  def showOutput(result: Int): IO[Unit] =
     IO.println(s"Wining score: $result")
 
   val lines = Parser.groupSplitBy("")(Parser.readContent(sourceFile)).zipWithIndex
