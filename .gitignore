@@ -11,3 +11,4 @@ metals.sbt
 # Data
 src/main/resources/
 src/202*/
+data/
