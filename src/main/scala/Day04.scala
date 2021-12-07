@@ -12,29 +12,12 @@ object Day04 extends IOApp.Simple {
   type Row = List[Int]
   case class Draws(values: List[Int]) extends GameData
   case class Board(rows: List[Row]) extends GameData
-  object Game {
-
-    /** Check if draws has generated a bingo (1 sequence) * */
-    def validate(board: Board, draws: List[Int]): Boolean =
-      def validateRow(board: Board, draws: List[Int]): Boolean =
-        board.rows.map(row => row.map(draws.contains).reduce(_ && _)).reduce(_ || _)
-      validateRow(board, draws) || validateRow(Board(board.rows.transpose), draws)
-
-    /** Find unmarked numbers * */
-    def calculate(board: Board, drawn: List[Int]): List[Int] =
-      (board.rows.flatten.toSet -- drawn.toSet).toList
-
-    /** Find first draw with bingo * */
-    def run(draws: Draws, board: Board): (Int, Int) =
-      @tailrec
-      def iterate(board: Board, drawn: List[Int], toDraw: List[Int]): List[Int] =
-        if (validate(board, drawn)) drawn
-        else if (toDraw.size == 0) List.empty
-        else iterate(board, drawn :+ toDraw.head, toDraw.tail)
-      val winningDraws = iterate(board, List.empty, draws.values)
-      val score = calculate(board, winningDraws).sum * winningDraws.last
-      (winningDraws.size, score)
-  }
+  def findBingo(draws: Draws, board: Board): (Int, Int) =
+    val indices = board.rows.map(_.map(draws.values.indexOf))
+    val index = math.min(indices.map(_.max).min, indices.transpose.map(_.max).min)
+    val unmatched = (board.rows.flatten.toSet -- draws.values.take(index + 1).toSet).sum
+    val last = draws.values(index)
+    (index, unmatched * last)
 
   def parseLine(line: List[String], idx: Long): GameData = idx match {
     case 0 => Draws(line(0).split(",").map(_.toInt).toList)
@@ -49,12 +32,7 @@ object Day04 extends IOApp.Simple {
       })
       .drop(1)
   def processLines(stream: Stream[IO, (Draws, Board)]): IO[Int] =
-    for {
-      boards <- stream.compile.toList
-      scores = boards.map(Game.run)
-      firstWin = scores.map(_._1).max
-      winningBoard = scores.filter(_._1 == firstWin).headOption.get
-    } yield (winningBoard._2)
+    stream.compile.toList.map(_.map(findBingo).maxBy(_._1)._2)
 
   def showOutput(result: Int): IO[Unit] =
     IO.println(s"Wining score: $result")
