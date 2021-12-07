@@ -8,4 +8,7 @@ with open("data/day07.txt", "r") as f:
 m = max(data)
 
 # Process
-min([sum(np.abs(data - i) * (np.abs(data - i) + 1)) / 2 for i in range(m)])
+fuel = min([sum(np.abs(data - i) * (np.abs(data - i) + 1)) / 2 for i in range(m)])
+
+# Output
+print(f"{fuel = }")

@@ -5,7 +5,7 @@ import numpy as np
 data = pd.read_table("data/day02.txt", sep=" ", header=None)
 data.columns = ["action", "amount"]
 
-# Prepares
+# Prepare
 data["aim"] = 0
 data.loc[data.action == "up", "aim"] = -data.loc[data.action == "up", "amount"]
 data.loc[data.action == "down", "aim"] = data.loc[data.action == "down", "amount"]
