@@ -3,7 +3,6 @@ import cats.implicits._
 import cats.effect.{IO, IOApp}
 import cats.effect.unsafe.implicits.global
 import fs2.Stream
-import scala.annotation.tailrec
 
 object Day04 extends IOApp.Simple {
   val sourceFile = "day04.txt"
