@@ -9,23 +9,18 @@ object Day06 extends IOApp.Simple {
   val sourceFile = "day06.txt"
   val n = 256
   val m = 7
-  type Population = Map[Int, Long]
+  type Population = IndexedSeq[Long]
   @tailrec
   def project(i: Int, pop: Population): Population =
     if(i == 0) pop
-    else 
-      val newPop = pop.map( (k, v) =>
-        k match {
-          case 0 => Map(m + 1 -> v, m - 1 -> v)
-          case _ => Map(k - 1 -> v) 
-        }).reduce(_ |+| _)
-      project(i - 1, newPop)
+    else project(i - 1, (pop.tail :+ pop.head).updated(m - 1, pop(m) + pop.head))
 
   def parseLine(line: String): Population =
-    line.split(",").map(x => Map(x.toInt -> 1L)).reduce(_ |+| _)
+    val counts = line.split(",").groupBy(x => x.toInt).map((k,v) => k -> v.size.toLong)
+    (0 to m + 1).map(counts.getOrElse(_, 0L))
   def filterLines(content: Stream[IO, Population]): Stream[IO, Population] = content
   def processLines(stream: Stream[IO, Population]): IO[Long] =
-    stream.compile.last.map(_.get).map(pop => project(n, pop).map(_._2).sum)
+    stream.compile.last.map(_.get).map(pop => project(n, pop).sum)
   def showOutput(result: Long): IO[Unit] =
     IO.println(s"After $n days, the population reached $result.")
 
