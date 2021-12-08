@@ -21,34 +21,17 @@ object Day08 extends IOApp.Simple {
     letters.map(('a' to 'g').indexOf _).toSet
   
   def wireSegments(digits: List[Digit]): IndexedSeq[Digit] =
-    // Derive from 1 - 4 - 7 - 8
-    val a = digits(1) -- digits(0)
-    val cf = digits(0)
-    val bd = digits(2) -- digits(0)
-    // Derive from 5
-    val withBds = digits.filter(bd.subsetOf _)
-    val g = withBds(1) -- digits(0) -- digits(1) -- digits(2)
-    // Derive from 9 - 6
-    val withOutE = withBds.filter(cf.subsetOf _).filter(withBds(1).subsetOf _)
-    val e = withOutE(1) -- withOutE(0)
-    val c = withOutE(0) -- withBds(1)
-    val f = cf -- c
-    // Derive from 2 - 3
-    val b = bd -- digits.filter(_.size == 5).filter(c.subsetOf _)(0)
-    val d = bd -- b
-
-    IndexedSeq(
-      a ++ b ++ c ++ e ++ f ++ g,       // 0
-      c ++ f,                           // 1
-      a ++ c ++ d ++ e ++ g,            // 2
-      a ++ c ++ d ++ f ++ g,            // 3
-      b ++ c ++ d ++ f,                 // 4
-      a ++ b ++ d ++ f ++ g,            // 5
-      a ++ b ++ d ++ e ++ f ++ g,       // 6
-      a ++ c ++ f,                      // 7
-      a ++ b ++ c ++ d ++ e ++ f ++ g,  // 8
-      a ++ b ++ c ++ d ++ f ++ g,       // 9
-    )
+    val d1 = digits(0)
+    val d7 = digits(1)
+    val d4 = digits(2)
+    val d8 = digits(9)
+    val d3 = digits.filter(d => d.size == 5 & d7.subsetOf(d))(0)
+    val d5 = digits.filter(d => d.size == 5 & (d4 -- d1).subsetOf(d))(0)
+    val d2 = digits.filter(d => d.size == 5 & !d.subsetOf(d5 ++ d4))(0)
+    val d6 = digits.filter(d => d.size == 6 & !d1.subsetOf(d))(0)
+    val d9 = digits.filter(d => d.size == 6 & (d3 ++ d4).subsetOf(d))(0)
+    val d0 = digits.filter(d => d.size == 6 & !(d4 -- d1).subsetOf(d))(0)
+    IndexedSeq(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9)
 
   def parseLine(line: String): List[Int] =
     val pipe = line.split(" \\| ")
