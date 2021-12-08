@@ -1,4 +1,5 @@
 from collections import Counter
+import numpy as np
 
 # Import
 with open("data/day06.txt", "r") as f:
@@ -6,12 +7,13 @@ with open("data/day06.txt", "r") as f:
 
 # Prepare
 n, m = 256, 7
-pop = [data.get(i, 0) for i in range(m + 2)]
+pop = np.vstack([data.get(i, 0) for i in range(m + 2)])
+# (Transition matrix)
+A = np.roll(np.diag(np.ones(m + 2)), 1, axis=1)
+A[m - 1, 0] = 1
 
 # Process
-for i in range(n):
-    pop = pop[1:] + pop[:1]
-    pop[m - 1] += pop[m + 1]
+population = np.linalg.matrix_power(A, n).dot(pop).sum()
 
 # Output
-print(f"{sum(pop) = }")
+print(f"{population = }")
