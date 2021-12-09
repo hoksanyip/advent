@@ -10,20 +10,16 @@ object Day09 extends IOApp.Simple {
   type Coord = (Int, Int)
   type Cell = Map[Coord, Int]
   def scanIfHigher(pos: Coord, newPos: Coord, data: Cell): Set[Coord] =
-    if (data.getOrElse(newPos, 10) > data(pos))
-      extendBasin(newPos, data)
-    else
-      Set.empty
+    if (data.getOrElse(newPos, 10) > data(pos)) extendBasin(newPos, data)
+    else Set.empty
 
   def extendBasin(pos: Coord, data: Cell): Set[Coord] =
-    if(data.getOrElse(pos, 10) >= 9)
-      Set.empty
-    else
-      Set(pos) |+|
-      scanIfHigher(pos, (pos._1 + 1, pos._2), data) |+|
-      scanIfHigher(pos, (pos._1 - 1, pos._2), data) |+|
-      scanIfHigher(pos, (pos._1, pos._2 - 1), data) |+|
-      scanIfHigher(pos, (pos._1, pos._2 + 1), data)
+    if(data.getOrElse(pos, 10) >= 9) Set.empty
+    else Set(pos)
+        |+| scanIfHigher(pos, (pos._1 + 1, pos._2), data)
+        |+| scanIfHigher(pos, (pos._1 - 1, pos._2), data)
+        |+| scanIfHigher(pos, (pos._1, pos._2 - 1), data)
+        |+| scanIfHigher(pos, (pos._1, pos._2 + 1), data)
 
   def parseLine(line: String): List[(Int, Int)] =
     line.toList.map(_.toString.toInt).zipWithIndex.map((v,j) => (j, v))
