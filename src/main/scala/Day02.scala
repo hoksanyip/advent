@@ -12,7 +12,8 @@ object Day02 extends IOApp.Simple {
   object Move {
     def up(amount: Int): Move = Reader(p => p.copy(aim = p.aim + amount))
     def down(amount: Int): Move = Reader(p => p.copy(aim = p.aim - amount))
-    def forward(amount: Int): Move = Reader(p => Position(p.x + amount, p.y + p.aim * amount, p.aim))
+    def forward(amount: Int): Move =
+      Reader(p => Position(p.x + amount, p.y + p.aim * amount, p.aim))
     def apply(direction: String, amount: Int): Move = direction match {
       case "forward" => forward(amount)
       case "up"      => up(amount)
@@ -21,7 +22,7 @@ object Day02 extends IOApp.Simple {
   }
 
   val expr = "([a-z]+) ([0-9]+)".r
-  def parseLine(line: String): Move = 
+  def parseLine(line: String): Move =
     val expr(direction, size) = line
     Move(direction, size.toInt)
   def filterLines(content: Stream[IO, Move]): Stream[IO, Move] = content

@@ -12,11 +12,11 @@ object Day06 extends IOApp.Simple {
   type Population = IndexedSeq[Long]
   @tailrec
   def project(i: Int, pop: Population): Population =
-    if(i == 0) pop
+    if (i == 0) pop
     else project(i - 1, (pop.tail :+ pop.head).updated(m - 1, pop(m) + pop.head))
 
   def parseLine(line: String): Population =
-    val counts = line.split(",").groupBy(x => x.toInt).map((k,v) => k -> v.size.toLong)
+    val counts = line.split(",").groupBy(x => x.toInt).map((k, v) => k -> v.size.toLong)
     (0 to m + 1).map(counts.getOrElse(_, 0L))
   def filterLines(content: Stream[IO, Population]): Stream[IO, Population] = content
   def processLines(stream: Stream[IO, Population]): IO[Long] =

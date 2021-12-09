@@ -4,22 +4,21 @@ import cats.effect.{IO, IOApp}
 import cats.effect.unsafe.implicits.global
 import fs2.Stream
 
-/**
-     0:     1:     2:     3:     4:     5:     6:     7:     8:     9:
-    aaa    ...    aaa    aaa    ...    aaa    aaa    aaa    aaa    aaa
-   b   c  .   c  .   c  .   c  b   c  b   .  b   .  .   c  b   c  b   c
-    ...    ...    ddd    ddd    ddd    ddd    ddd    ...    ddd    ddd
-   e   f  .   f  e   .  .   f  .   f  .   f  e   f  .   f  e   f  .   f 
-    ggg    ...    ggg    ggg    ...    ggg    ggg    ...    ggg    ggg
-     6      2      5      5      4      5      6      3       7     6     
-**/
+/**     0:     1:     2:     3:     4:     5:     6:     7:     8:     9:
+  *    aaa    ...    aaa    aaa    ...    aaa    aaa    aaa    aaa    aaa
+  *   b   c  .   c  .   c  .   c  b   c  b   .  b   .  .   c  b   c  b   c
+  *    ...    ...    ddd    ddd    ddd    ddd    ddd    ...    ddd    ddd
+  *   e   f  .   f  e   .  .   f  .   f  .   f  e   f  .   f  e   f  .   f
+  *    ggg    ...    ggg    ggg    ...    ggg    ggg    ...    ggg    ggg
+  *     6      2      5      5      4      5      6      3       7     6
+  */
 object Day08 extends IOApp.Simple {
   val sourceFile = "day08.txt"
 
   type Digit = Set[Int]
   def parseDigit(letters: String): Digit =
     letters.map(('a' to 'g').indexOf _).toSet
-  
+
   def wireSegments(digits: List[Digit]): IndexedSeq[Digit] =
     val d1 = digits(0)
     val d7 = digits(1)
@@ -42,7 +41,7 @@ object Day08 extends IOApp.Simple {
   def processLines(stream: Stream[IO, Int]): IO[Int] =
     stream.compile.toList.map(_.sum)
 
-  def showOutput(result: Int): IO[Unit] = 
+  def showOutput(result: Int): IO[Unit] =
     IO.println(s"Output: $result")
 
   val lines = Parser.readContent(sourceFile)
