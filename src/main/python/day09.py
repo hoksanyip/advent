@@ -27,9 +27,9 @@ def find_route(p: List[int], data: np.array) -> int:
 
     check_points = [[p[0] + 1, p[1]], [p[0], p[1] + 1], [p[0] - 1, p[1]], [p[0], p[1] - 1]]
     acc = [p]
-    for p in check_points:
-        if data[p[0], p[1]] > cur_value:
-            acc += find_route(p, data)
+    for p_next in check_points:
+        if data[p_next[0], p_next[1]] > cur_value:
+            acc += find_route(p_next, data)
 
     return acc
 
