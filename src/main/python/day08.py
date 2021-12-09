@@ -1,10 +1,8 @@
 from functools import reduce
-import numpy as np
-from typing import List
 
 
 # Import
-with open("data/day08.txt", "r") as f:
+with open("src/main/resources/day08.txt", "r") as f:
     data = [row.split(" | ") for row in f.readlines()]
 
 # Prepare

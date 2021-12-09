@@ -1,7 +1,7 @@
 import numpy as np
 
 # Import
-with open("data/day01.txt", "r") as f:
+with open("src/main/resources/day01.txt", "r") as f:
     data = np.array([int(row.strip()) for row in f.readlines()])
 
 # Process

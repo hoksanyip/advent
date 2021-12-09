@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # Import
-data = pd.read_table("data/day02.txt", sep=" ", header=None)
+data = pd.read_table("src/main/resources/day02.txt", sep=" ", header=None)
 data.columns = ["action", "amount"]
 
 # Prepare

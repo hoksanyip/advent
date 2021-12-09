@@ -1,42 +1,39 @@
 import numpy as np
-import pandas as pd
-from collections import Counter
-from typing import List
+
 
 # Import
-with open("data/day09.txt", "r") as f:
+with open("src/main/resources/day09.txt", "r") as f:
     data = np.array([[int(i) for i in list(row.strip())] for row in f.readlines()])
 
 # Prepare
 n, m = data.shape
-rel_diff = (
-    (np.diff(data, 1, 1, append=10) <= 0).astype(int) +
-    (np.diff(-data, 1, 1, prepend=-10) <= 0).astype(int) +
-    (np.diff(-data, 1, 0, prepend=-10) <= 0).astype(int) +
-    (np.diff(data, 1, 0, append=10) <= 0).astype(int)
-)
+rel_diff = np.zeros((n, m))
+rel_diff[:, :-1] += (np.diff(data, 1, 1) <= 0).astype(int) ## higher than right?
+rel_diff[:, 1:] += (np.diff(-data, 1, 1) <= 0).astype(int) ## higher than left?
+rel_diff[:-1, :] += (np.diff(data, 1, 0) <= 0).astype(int) ## higher than down?
+rel_diff[1:, :] += (np.diff(-data, 1, 0) <= 0).astype(int) ## higher then up?
+
 lowest_points = np.argwhere(rel_diff == 0) + 1
 data_bounded = np.ones((n + 2, m + 2)) * 10
 data_bounded[1:-1, 1:-1] = data
 
 # Process
-def find_route(p: List[int], data: np.array) -> int:
-    cur_value = data[p[0], p[1]]
-    if cur_value >= 9:
-        return []
+def find_route(x: int, y: int, data: np.array) -> set:
+    def scan_if_higher(x: int, y: int, cur_value: int, data: np.array) -> set:
+        return find_route(x, y, data) if data[x, y] > cur_value else {}
 
-    check_points = [[p[0] + 1, p[1]], [p[0], p[1] + 1], [p[0] - 1, p[1]], [p[0], p[1] - 1]]
-    acc = [p]
-    for p_next in check_points:
-        if data[p_next[0], p_next[1]] > cur_value:
-            acc += find_route(p_next, data)
+    if data[x, y] >= 9:
+        return {}
+    else:
+        acc = {(x, y)}
+        acc = set.union(acc, scan_if_higher(x + 1, y, data[x, y], data)) ## go down
+        acc = set.union(acc, scan_if_higher(x - 1, y, data[x, y], data)) ## go up
+        acc = set.union(acc, scan_if_higher(x, y + 1, data[x, y], data)) ## go right
+        acc = set.union(acc, scan_if_higher(x, y - 1, data[x, y], data)) ## got left
+        return acc
 
-    return acc
-
-basins = sorted([
-    pd.DataFrame(find_route(point.tolist(), data_bounded)).drop_duplicates().shape[0]
-    for point in lowest_points
-], reverse=True)
+basins = [len(find_route(point[0], point[1], data_bounded)) for point in lowest_points]
+basins.sort(reverse=True)
 highest_basins = basins[:3]
 
 # Output

@@ -2,7 +2,7 @@ from collections import Counter
 import numpy as np
 
 # Import
-with open("data/day06.txt", "r") as f:
+with open("src/main/resources/day06.txt", "r") as f:
     data = Counter([int(v) for v in f.readline().split(",")])
 
 # Prepare

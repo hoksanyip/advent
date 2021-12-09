@@ -2,7 +2,7 @@ import numpy as np
 from typing import Callable
 
 # Import
-with open("data/day03.txt", "r") as f:
+with open("src/main/resources/day03.txt", "r") as f:
     data = np.array([int("0b" + row, 2) for row in f.readlines()])
 
 # Prepare
