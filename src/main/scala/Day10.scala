@@ -9,26 +9,25 @@ object Day10 extends IOApp.Simple {
   val sourceFile = "day10.txt"
 
   enum ChunkType(val score: Long):
-    case `__` extends ChunkType(0L)
     case `()` extends ChunkType(1L)
     case `[]` extends ChunkType(2L)
     case `{}` extends ChunkType(3L)
     case `<>` extends ChunkType(4L)
   type Inception = List[ChunkType]
-  type SyntaxChecker[A] = Either[ChunkType, A]
+  type ChunkWrapper[A] = Either[ChunkType, A]
   import ChunkType._
 
   object SyntaxParser {
-    def open(kind: ChunkType) = Kleisli[SyntaxChecker, Inception, Inception] { stack =>
-      (kind :: stack).asRight
+    def open(chunkType: ChunkType) = Kleisli { (stack: Inception) =>
+      (chunkType :: stack).asRight[ChunkType]
     }
-    def close(kind: ChunkType) = Kleisli[SyntaxChecker, Inception, Inception] { stack =>
+    def close(chunkType: ChunkType) = Kleisli { (stack: Inception) =>
       stack match {
-        case `kind` :: tail => Right(tail)
-        case _              => Left(kind)
+        case `chunkType` :: tail => Right(tail)
+        case _                   => Left(chunkType)
       }
     }
-    def evalOne(symbol: Char): Kleisli[SyntaxChecker, Inception, Inception] =
+    def evalOne(symbol: Char) =
       symbol match {
         case '(' => open(`()`)
         case ')' => close(`()`)
@@ -39,17 +38,14 @@ object Day10 extends IOApp.Simple {
         case '<' => open(`<>`)
         case '>' => close(`<>`)
       }
-    def eval(input: String): SyntaxChecker[Inception] =
+    def eval(input: String): ChunkWrapper[Inception] =
       input.toList.map(evalOne).reduce(_ andThen _).run(List.empty)
   }
 
-  def parseLine(line: String): SyntaxChecker[Inception] = SyntaxParser.eval(line)
-  def filterLines(content: Stream[IO, SyntaxChecker[Inception]]): Stream[IO, Inception] =
+  def parseLine(line: String): ChunkWrapper[Inception] = SyntaxParser.eval(line)
+  def filterLines(content: Stream[IO, ChunkWrapper[Inception]]): Stream[IO, Inception] =
     content
-      .map(_ match {
-        case Left(_)      => List.empty
-        case Right(chunk) => chunk
-      })
+      .map(_.fold(_ => List.empty, r => r))
       .filter(_.size > 0)
   def processLines(stream: Stream[IO, Inception]): IO[Long] =
     stream.compile.toList.map(chunk =>

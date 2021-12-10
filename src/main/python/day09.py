@@ -8,10 +8,10 @@ with open("src/main/resources/day09.txt", "r") as f:
 # Prepare
 n, m = data.shape
 rel_diff = np.zeros((n, m))
-rel_diff[:, :-1] += (np.diff(data, 1, 1) <= 0).astype(int) ## higher than right?
-rel_diff[:, 1:] += (np.diff(-data, 1, 1) <= 0).astype(int) ## higher than left?
-rel_diff[:-1, :] += (np.diff(data, 1, 0) <= 0).astype(int) ## higher than down?
-rel_diff[1:, :] += (np.diff(-data, 1, 0) <= 0).astype(int) ## higher then up?
+rel_diff[:, :-1] += (np.diff(-data, 1, 1) > 0).astype(int)  ## higher than right?
+rel_diff[:, 1:] += (np.diff(data, 1, 1) > 0).astype(int)    ## higher than left?
+rel_diff[:-1, :] += (np.diff(-data, 1, 0) > 0).astype(int)  ## higher than down?
+rel_diff[1:, :] += (np.diff(data, 1, 0) > 0).astype(int)    ## higher then up?
 
 lowest_points = np.argwhere(rel_diff == 0) + 1
 data_bounded = np.ones((n + 2, m + 2)) * 10

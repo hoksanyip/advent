@@ -9,18 +9,16 @@ object Day09 extends IOApp.Simple {
 
   type Coord = (Int, Int)
   type Cell = Map[Coord, Int]
-  def scanIfHigher(pos: Coord, newPos: Coord, data: Cell): Set[Coord] =
-    if (data.getOrElse(newPos, 10) > data(pos)) extendBasin(newPos, data)
-    else Set.empty
 
-  def extendBasin(pos: Coord, data: Cell): Set[Coord] =
-    if (data.getOrElse(pos, 10) >= 9) Set.empty
+  def extendBasin(pos: Coord, prevValue: Int, data: Cell): Set[Coord] =
+    val curValue = data.getOrElse(pos, 10)
+    if (curValue >= 9 | curValue <= prevValue) Set.empty
     else
       Set(pos)
-        |+| scanIfHigher(pos, (pos._1 + 1, pos._2), data)
-        |+| scanIfHigher(pos, (pos._1 - 1, pos._2), data)
-        |+| scanIfHigher(pos, (pos._1, pos._2 - 1), data)
-        |+| scanIfHigher(pos, (pos._1, pos._2 + 1), data)
+        |+| extendBasin((pos._1 + 1, pos._2), curValue, data)
+        |+| extendBasin((pos._1 - 1, pos._2), curValue, data)
+        |+| extendBasin((pos._1, pos._2 - 1), curValue, data)
+        |+| extendBasin((pos._1, pos._2 + 1), curValue, data)
 
   def parseLine(line: String): List[(Int, Int)] =
     line.toList.map(_.toString.toInt).zipWithIndex.map((v, j) => (j, v))
@@ -38,7 +36,7 @@ object Day09 extends IOApp.Simple {
       }
 
       bottoms
-        .map(point => extendBasin(point._1, coords).size)
+        .map((point, _) => extendBasin(point, -1, coords).size)
         .toList
         .sortWith(_ > _)
         .take(3)
