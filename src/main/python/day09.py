@@ -18,21 +18,19 @@ data_bounded = np.ones((n + 2, m + 2)) * 10
 data_bounded[1:-1, 1:-1] = data
 
 # Process
-def find_route(x: int, y: int, data: np.array) -> set:
-    def scan_if_higher(x: int, y: int, cur_value: int, data: np.array) -> set:
-        return find_route(x, y, data) if data[x, y] > cur_value else {}
-
-    if data[x, y] >= 9:
+def extend_basin(x: int, y: int, prev_value: int, data: np.array) -> set:
+    cur_value = data[x, y]
+    if cur_value >= 9 or cur_value <= prev_value:
         return {}
     else:
         acc = {(x, y)}
-        acc = set.union(acc, scan_if_higher(x + 1, y, data[x, y], data)) ## go down
-        acc = set.union(acc, scan_if_higher(x - 1, y, data[x, y], data)) ## go up
-        acc = set.union(acc, scan_if_higher(x, y + 1, data[x, y], data)) ## go right
-        acc = set.union(acc, scan_if_higher(x, y - 1, data[x, y], data)) ## got left
+        acc = set.union(acc, extend_basin(x + 1, y, cur_value, data)) ## go down
+        acc = set.union(acc, extend_basin(x - 1, y, cur_value, data)) ## go up
+        acc = set.union(acc, extend_basin(x, y + 1, cur_value, data)) ## go right
+        acc = set.union(acc, extend_basin(x, y - 1, cur_value, data)) ## got left
         return acc
 
-basins = [len(find_route(point[0], point[1], data_bounded)) for point in lowest_points]
+basins = [len(extend_basin(point[0], point[1], -1, data_bounded)) for point in lowest_points]
 basins.sort(reverse=True)
 highest_basins = basins[:3]
 
