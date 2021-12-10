@@ -23,7 +23,7 @@ object Stats extends IOApp.Simple {
       name: String = "", stars: Int = 0, local_score: Int = 0,
       day: Int = 0, part: Int = 0, timestamp: String = ""
   ) {
-    def toCsv = s"$name, $stars, $local_score, $day, $part, $timestamp" 
+    def toCsv = s"$day, $part, $timestamp, $name, $stars, $local_score" 
   }
   def parseTimestamp(epoch: Long) = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(epoch * 1000L)
 
@@ -46,10 +46,11 @@ object Stats extends IOApp.Simple {
       .map((stat, part) => (stat, part.toSeq.sortBy(_._1)))                         // Sort by part
       .flatMap((stat, part) => part.map((k,v) => (stat.copy(part=k), v)))           // Flatten part
       .map((stat, part) => stat.copy(timestamp = parseTimestamp(part.get_star_ts))) // Convert time
+      .sortBy(stat => -stat.day * 10 + -stat.part)
   }
 
   // Write to output
-  val headers = Stream.emit[IO, String]("name, stars, score, day, part, timestamp")
+  val headers = Stream.emit[IO, String]("day, part, timestamp, name, stars, score")
   val values = Stream.eval(stats).flatMap(Stream.apply(_:_*)).map(_.toCsv)
   val run = (headers ++ values)
     .intersperse("\n")
