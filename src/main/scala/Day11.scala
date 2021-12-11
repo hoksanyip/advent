@@ -21,8 +21,8 @@ object Day11 extends IOApp.Simple {
   def increment(board: Cell, coord: Coord): Cell =
     board.getOrElse(coord, -1) match {
       case -1 => board
-      case 9 => neighbour(coord).foldLeft(board.updated(coord, -1))(increment)
-      case x => board.updated(coord, x + 1)
+      case 9  => neighbour(coord).foldLeft(board.updated(coord, -1))(increment)
+      case x  => board.updated(coord, x + 1)
     }
 
   def iterate(board: Cell): Cell =
@@ -43,7 +43,7 @@ object Day11 extends IOApp.Simple {
       col.map(v => (i.toInt, v._1) -> v._2).toMap
     }
   def processLines(stream: Stream[IO, Cell])(using monoid: Monoid[List[Cell]]): IO[Int] =
-    stream.compile.toList.map{ coords => 
+    stream.compile.toList.map { coords =>
       iterateUntilSuperFlash(1, coords.combineAll)
     }
   def showOutput(result: Int): IO[Unit] =
