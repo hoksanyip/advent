@@ -1,11 +1,14 @@
 from functools import reduce
 
-
+#################################################
 # Import
+#################################################
 with open("src/main/resources/day08.txt", "r") as f:
-    data = [row.split(" | ") for row in f.readlines()]
+    data = [row.strip().split(" | ") for row in f.readlines()]
 
+#################################################
 # Prepare
+#################################################
 class Digit:
     def __init__(self, parser: str):
         digits = [set(d) for d in parser.split(" ")]
@@ -23,11 +26,15 @@ class Digit:
         self.order = [d0, d1, d2, d3, d4, d5, d6, d7, d8, d9]
 
     def parse(self, value: str) -> int:
-        digits = [self.order.index(set(d)) for d in value.strip().split(" ")]
+        digits = [self.order.index(set(d)) for d in value.split(" ")]
         return reduce(lambda x, y: x * 10 + y, digits)
 
+#################################################
 # Process
+#################################################
 numbers = [Digit(parser).parse(value) for parser, value in data]
 
+#################################################
 # Output
+#################################################
 print(f"{sum(numbers) = }")

@@ -1,11 +1,15 @@
 from functools import reduce
 import numpy as np
 
+#################################################
 # Import
+#################################################
 with open("src/main/resources/day10.txt", "r") as f:
     data = [row.strip() for row in f.readlines()]
 
+#################################################
 # Process
+#################################################
 SCORE = {")": -3, "]": -57, "}": -1197, ">": -25137,
         "(": 1, "[": 2, "{": 3, "<": 4}
 MAPPING = {")": "(", "]": "[", "}": "{", ">": "<"}
@@ -25,9 +29,13 @@ def process_syntax(row: str) -> int:
 
     return score
 
+#################################################
 # Process
+#################################################
 scores = [process_syntax(row) for row in data]
 scores = [s for s in scores if s > 0]
 
+#################################################
 # output
+#################################################
 print(f"{np.median(scores) = }")

@@ -1,11 +1,14 @@
 import numpy as np
 
-
+#################################################
 # Import
+#################################################
 with open("src/main/resources/day09.txt", "r") as f:
-    data = np.array([[int(i) for i in list(row.strip())] for row in f.readlines()])
+    data = np.array([list(row.strip()) for row in f.readlines()], dtype=int)
 
+#################################################
 # Prepare
+#################################################
 n, m = data.shape
 rel_diff = np.zeros((n, m))
 rel_diff[:, :-1] += (np.diff(-data, 1, 1) > 0).astype(int)  ## higher than right?
@@ -17,7 +20,9 @@ lowest_points = np.argwhere(rel_diff == 0) + 1
 data_bounded = np.ones((n + 2, m + 2)) * 10
 data_bounded[1:-1, 1:-1] = data
 
+#################################################
 # Process
+#################################################
 def extend_basin(x: int, y: int, prev_value: int, data: np.array) -> set:
     cur_value = data[x, y]
     if cur_value >= 9 or cur_value <= prev_value:
@@ -34,5 +39,7 @@ basins = [len(extend_basin(point[0], point[1], -1, data_bounded)) for point in l
 basins.sort(reverse=True)
 highest_basins = basins[:3]
 
+#################################################
 # Output
+#################################################
 print(f"{np.prod(highest_basins) = }")
