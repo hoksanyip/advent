@@ -8,7 +8,7 @@ def parse(text: str) -> Tuple[int, int]:
     coord = text.split(",")
     return (int(coord[0]), int(coord[1]))
 
-with open("src/main/resources/day05.txt", "r") as f:
+with open("2021/src/main/resources/day05.txt", "r") as f:
     data = [row.strip().split(" -> ") for row in f.readlines()]
     data = [[parse(start), parse(end)] for start, end in data]
 

@@ -4,7 +4,7 @@ from typing import Callable
 #################################################
 # Import
 #################################################
-with open("src/main/resources/day03.txt", "r") as f:
+with open("2021/src/main/resources/day03.txt", "r") as f:
     data = np.array([int("0b" + row, 2) for row in f.readlines()])
 
 #################################################

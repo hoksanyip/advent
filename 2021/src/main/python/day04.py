@@ -3,7 +3,7 @@ import numpy as np
 #################################################
 # Import
 #################################################
-with open("src/main/resources/day04.txt", "r") as f:
+with open("2021/src/main/resources/day04.txt", "r") as f:
     draws = [int(value) for value in f.readline().strip().split(",")]
     _ = f.readline()
     boards = "".join(f.readlines()).split("\n\n")

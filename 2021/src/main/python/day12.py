@@ -4,7 +4,7 @@ from collections import Counter
 #################################################
 # Import
 #################################################
-with open("src/main/resources/day12.txt", "r") as f:
+with open("2021/src/main/resources/day12.txt", "r") as f:
     data = [row.strip() for row in f.readlines()]
     data = [row.split("-") for row in data]
 
