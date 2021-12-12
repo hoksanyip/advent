@@ -4,6 +4,7 @@ import fs2.Stream
 
 object Day01 extends IOApp.Simple {
   val sourceFile = "day01.txt"
+  val year = 2021
 
   def parseLine(line: String): Int = line.toInt
   def filterLines(content: Stream[IO, Int]): Stream[IO, Int] =
@@ -19,7 +20,7 @@ object Day01 extends IOApp.Simple {
   def showOutput(count: Long): IO[Unit] =
     IO.println(s"Number of increases: $count")
 
-  val lines = Parser.readContent(sourceFile)
+  val lines = Parser.readContent(sourceFile, Some(year))
   val content = lines.through(Parser.parseLines(parseLine))
   val filtered = filterLines(content)
   val result = processLines(filtered)

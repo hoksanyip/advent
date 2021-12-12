@@ -6,6 +6,7 @@ import fs2.Stream
 
 object Day04 extends IOApp.Simple {
   val sourceFile = "day04.txt"
+  val year = 2021
 
   trait GameData
   type Row = List[Int]
@@ -36,7 +37,7 @@ object Day04 extends IOApp.Simple {
   def showOutput(result: Int): IO[Unit] =
     IO.println(s"Wining score: $result")
 
-  val lines = Parser.groupSplitBy("")(Parser.readContent(sourceFile)).zipWithIndex
+  val lines = Parser.groupSplitBy("")(Parser.readContent(sourceFile, Some(year))).zipWithIndex
   val content = lines.map(parseLine)
   val filtered = filterLines(content)
   val result = processLines(filtered)

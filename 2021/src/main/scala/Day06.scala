@@ -7,6 +7,8 @@ import scala.annotation.tailrec
 
 object Day06 extends IOApp.Simple {
   val sourceFile = "day06.txt"
+  val year = 2021
+
   val n = 256
   val m = 7
   type Population = IndexedSeq[Long]
@@ -24,7 +26,7 @@ object Day06 extends IOApp.Simple {
   def showOutput(result: Long): IO[Unit] =
     IO.println(s"After $n days, the population reached $result.")
 
-  val lines = Parser.readContent(sourceFile)
+  val lines = Parser.readContent(sourceFile, Some(year))
   val content = lines.through(Parser.parseLines(parseLine))
   val filtered = filterLines(content)
   val result = processLines(filtered)

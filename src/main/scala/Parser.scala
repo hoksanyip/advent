@@ -2,9 +2,12 @@ import cats._
 import cats.implicits._
 import cats.effect.IO
 import fs2.{Stream, Pipe, text, io}
+import fs2.io.file.{Files, Path}
 import scala.util.Try
 
 object Parser {
+  val cwd = System.getProperty("user.dir")
+  val dataFolder = "src/main/resources"
 
   /** Read content from resource file.
     *
@@ -12,8 +15,13 @@ object Parser {
     * @param location Name of the input file, which is stored in `src/resources`.
     * @return A `Stream[IO, String]` object containing a stream of rows within that file.
     */
-  def readContent(location: String, chunkSize: Int = 8192): Stream[IO, String] =
-    io.readInputStream(IO { getClass.getResourceAsStream(s"/$location") }, chunkSize)
+  def readContent(location: String, year: Option[Int] = None): Stream[IO, String] =
+    val filePath = year match
+      case Some(y) => Path(s"$cwd/$y/$dataFolder/$location")
+      case None    => Path(s"$cwd/$dataFolder/$location")
+
+    Files[IO]
+      .readAll(filePath)
       .through(text.utf8.decode)
       .through(text.lines)
 

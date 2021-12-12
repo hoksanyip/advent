@@ -7,6 +7,7 @@ import fs2.Stream
 
 object Day10 extends IOApp.Simple {
   val sourceFile = "day10.txt"
+  val year = 2021
 
   enum Chunk(val score: Long):
     case Parenthese extends Chunk(1L)
@@ -55,7 +56,7 @@ object Day10 extends IOApp.Simple {
   def showOutput(result: Long): IO[Unit] =
     IO.println(s"result = $result")
 
-  val lines = Parser.readContent(sourceFile)
+  val lines = Parser.readContent(sourceFile, Some(year))
   val content = lines.through(Parser.parseLines(parseLine))
   val filtered = filterLines(content)
   val result = processLines(filtered)

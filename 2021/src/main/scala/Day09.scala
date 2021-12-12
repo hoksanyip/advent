@@ -6,6 +6,7 @@ import fs2.Stream
 
 object Day09 extends IOApp.Simple {
   val sourceFile = "day09.txt"
+  val year = 2021
 
   type Coord = (Int, Int)
   type Cell = Map[Coord, Int]
@@ -45,7 +46,7 @@ object Day09 extends IOApp.Simple {
   def showOutput(result: Int): IO[Unit] =
     IO.println(s"Output: $result")
 
-  val lines = Parser.readContent(sourceFile)
+  val lines = Parser.readContent(sourceFile, Some(year))
   val content = lines.through(Parser.parseLines(parseLine))
   val filtered = filterLines(content)
   val result = processLines(filtered)

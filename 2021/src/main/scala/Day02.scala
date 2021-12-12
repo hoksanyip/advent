@@ -6,6 +6,7 @@ import fs2.Stream
 
 object Day02 extends IOApp.Simple {
   val sourceFile = "day02.txt"
+  val year = 2021
 
   case class Position(x: Int = 0, y: Int = 0, aim: Int = 0)
   type Move = Reader[Position, Position]
@@ -31,7 +32,7 @@ object Day02 extends IOApp.Simple {
   def showOutput(pos: Position): IO[Unit] =
     IO.println(s"Horizontal: ${pos.x}, Vertical: ${pos.y}, Result: ${pos.x * pos.y}")
 
-  val lines = Parser.readContent(sourceFile)
+  val lines = Parser.readContent(sourceFile, Some(year))
   val content = lines.through(Parser.parseLines(parseLine))
   val filtered = filterLines(content)
   val result = processLines(filtered)

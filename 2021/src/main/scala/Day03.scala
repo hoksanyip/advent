@@ -7,6 +7,7 @@ import fs2.Stream
 
 object Day03 extends IOApp.Simple {
   val sourceFile = "day03.txt"
+  val year = 2021
 
   @tailrec
   def reduceToCommon(f: (Int, Int) => Boolean)(acc: Int, m: Int, list: List[Int]): Int =
@@ -30,7 +31,7 @@ object Day03 extends IOApp.Simple {
   def showOutput(result: (Int, Int)): IO[Unit] =
     IO.println(s"Oxygen: ${result._1}, Scrubber: ${result._2}, Life: ${result._1 * result._2}")
 
-  val lines = Parser.readContent(sourceFile)
+  val lines = Parser.readContent(sourceFile, Some(year))
   val content = lines.through(Parser.parseLines(parseLine))
   val filtered = filterLines(content)
   val result = processLines(filtered)

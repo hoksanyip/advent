@@ -7,6 +7,7 @@ import scala.annotation.tailrec
 
 object Day11 extends IOApp.Simple {
   val sourceFile = "day11.txt"
+  val year = 2021
 
   type Coord = (Int, Int)
   type Cell = Map[Coord, Int]
@@ -51,7 +52,7 @@ object Day11 extends IOApp.Simple {
   def print(board: Cell): Unit =
     (0 to 9).foreach { i => println((0 to 9).map { j => math.max(board(i, j), 0) }.mkString) }
 
-  val lines = Parser.readContent(sourceFile)
+  val lines = Parser.readContent(sourceFile, Some(year))
   val content = lines.through(Parser.parseLines(parseLine))
   val filtered = filterLines(content)
   val result = processLines(filtered)

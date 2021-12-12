@@ -14,6 +14,7 @@ import fs2.Stream
   */
 object Day08 extends IOApp.Simple {
   val sourceFile = "day08.txt"
+  val year = 2021
 
   type Digit = Set[Int]
   def parseDigit(letters: String): Digit =
@@ -44,7 +45,7 @@ object Day08 extends IOApp.Simple {
   def showOutput(result: Int): IO[Unit] =
     IO.println(s"Output: $result")
 
-  val lines = Parser.readContent(sourceFile)
+  val lines = Parser.readContent(sourceFile, Some(year))
   val content = lines.through(Parser.parseLines(parseLine))
   val filtered = filterLines(content)
   val result = processLines(filtered)

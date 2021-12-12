@@ -6,6 +6,7 @@ import fs2.Stream
 
 object Day05 extends IOApp.Simple {
   val sourceFile = "day05.txt"
+  val year = 2021
 
   type Freq = Map[Coordinate, Int]
   case class Coordinate(x: Int, y: Int)
@@ -31,7 +32,7 @@ object Day05 extends IOApp.Simple {
     val count = result.filter((x, y) => y > 1).size
     IO.println(s"Number of overlapping points: $count")
 
-  val lines = Parser.readContent(sourceFile)
+  val lines = Parser.readContent(sourceFile, Some(year))
   val content = lines.through(Parser.parseLines(parseLine))
   val filtered = filterLines(content)
   val result = processLines(filtered)

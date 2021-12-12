@@ -9,6 +9,5 @@ metals.sbt
 .vscode
 
 # Data
-src/main/resources/
-src/202*/
+resources/
 data/
