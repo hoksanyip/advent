@@ -45,16 +45,18 @@ object Day10 extends IOApp.Simple {
 
   def parse(line: String): Check[Inception] = Syntax.eval(line)
 
-  def collect(content: Stream[IO, Check[Inception]]): Stream[IO, Inception] =
+  def collect(content: Stream[IO, Check[Inception]]): IO[List[Inception]] =
     content
       .map(_.fold(_ => List.empty, r => r))
       .filter(_.size > 0)
+      .compile
+      .toList
 
-  def process(stream: Stream[IO, Inception]): IO[Long] =
-    stream.compile.toList.map(inceptions =>
+  def process(stream: IO[List[Inception]]): IO[Long] =
+    stream.map { inceptions =>
       val scores = inceptions.map(_.map(_.score).foldLeft(0L)(_ * 5 + _)).sorted
       scores((scores.size / 2).toInt)
-    )
+    }
 
   def show(result: Long): IO[Unit] =
     IO.println(s"result = $result")

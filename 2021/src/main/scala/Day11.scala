@@ -40,13 +40,14 @@ object Day11 extends IOApp.Simple {
   def parse(line: String): List[(Int, Int)] =
     line.toList.map(_.toString.toInt).zipWithIndex.map(_.swap)
 
-  def collect(content: Stream[IO, List[(Int, Int)]]): Stream[IO, Cell] =
-    content.zipWithIndex.map { (col, i) =>
-      col.map(v => (i.toInt, v._1) -> v._2).toMap
-    }
+  def collect(content: Stream[IO, List[(Int, Int)]]): IO[List[Cell]] =
+    content.zipWithIndex
+      .map { (col, i) => col.map(v => (i.toInt, v._1) -> v._2).toMap }
+      .compile
+      .toList
 
-  def process(stream: Stream[IO, Cell])(using monoid: Monoid[List[Cell]]): IO[Int] =
-    stream.compile.toList.map { coords =>
+  def process(stream: IO[List[Cell]])(using monoid: Monoid[List[Cell]]): IO[Int] =
+    stream.map { coords =>
       iterateUntilSuperFlash(1, coords.combineAll)
     }
 

@@ -21,10 +21,9 @@ object Day06 extends IOApp.Simple {
     val counts = line.split(",").groupBy(x => x.toInt).map((k, v) => k -> v.size.toLong)
     (0 to m + 1).map(counts.getOrElse(_, 0L))
 
-  def collect(content: Stream[IO, Population]): Stream[IO, Population] = content
+  def collect(content: Stream[IO, Population]): IO[Population] = content.compile.last.map(_.get)
 
-  def process(stream: Stream[IO, Population]): IO[Long] =
-    stream.compile.last.map(_.get).map(pop => project(n, pop).sum)
+  def process(stream: IO[Population]): IO[Long] = stream.map(pop => project(n, pop).sum)
 
   def show(result: Long): IO[Unit] =
     IO.println(s"After $n days, the population reached $result.")

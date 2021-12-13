@@ -20,11 +20,11 @@ object Day03 extends IOApp.Simple {
 
   def parse(line: String): Int = Integer.parseInt(line, 2)
 
-  def collect(content: Stream[IO, Int]): Stream[IO, Int] = content
+  def collect(content: Stream[IO, Int]): IO[List[Int]] = content.compile.toList
 
-  def process(stream: Stream[IO, Int]): IO[(Int, Int)] =
+  def process(stream: IO[List[Int]]): IO[(Int, Int)] =
     for {
-      l <- stream.compile.toList
+      l <- stream
       n = math.ceil(math.log(l.max) / math.log(2)).toInt
       oxygen = reduceToCommon(_ >= _)(0, n - 1, l)
       scrubber = reduceToCommon(_ < _)(0, n - 1, l)

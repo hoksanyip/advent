@@ -21,14 +21,20 @@ object Day09 extends IOApp.Simple {
         |+| extendBasin((pos._1, pos._2 - 1), curValue, data)
         |+| extendBasin((pos._1, pos._2 + 1), curValue, data)
 
-  def parse(line: String): List[(Int, Int)] =
-    line.toList.map(_.toString.toInt).zipWithIndex.map((v, j) => (j, v))
+  def parse(line: String): List[Int] = line.toList.map(_.asDigit)
 
-  def collect(content: Stream[IO, List[(Int, Int)]]): Stream[IO, Cell] =
-    content.zipWithIndex.map((col, i) => col.map(v => (i.toInt, v._1) -> v._2).toMap)
+  def collect(content: Stream[IO, List[Int]]): IO[Cell] =
+    content.compile.toList.map { data =>
+      val map = for {
+        i <- data.indices
+        j <- data.head.indices
+        d = data(i)(j)
+      } yield Map((i, j) -> d)
+      map.reduce(_ |+| _)
+    }
 
-  def process(stream: Stream[IO, Cell]): IO[Int] =
-    stream.compile.toList.map(_.reduce(_ |+| _)).map { coords =>
+  def process(stream: IO[Cell]): IO[Int] =
+    stream.map { coords =>
       // Find lowest point
       val bottoms: Cell = coords.filter { (k, v) =>
         true
