@@ -2,8 +2,10 @@
 .bloop
 .bsp
 .metals
+.env
 target/
 metals.sbt
+*.pyc
 
 # Project
 .vscode
@@ -11,3 +13,4 @@ metals.sbt
 # Data
 resources/
 data/
+doc/
