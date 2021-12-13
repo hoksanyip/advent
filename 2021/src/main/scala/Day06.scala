@@ -17,18 +17,21 @@ object Day06 extends IOApp.Simple {
     if (i == 0) pop
     else project(i - 1, (pop.tail :+ pop.head).updated(m - 1, pop(m) + pop.head))
 
-  def parseLine(line: String): Population =
+  def parse(line: String): Population =
     val counts = line.split(",").groupBy(x => x.toInt).map((k, v) => k -> v.size.toLong)
     (0 to m + 1).map(counts.getOrElse(_, 0L))
-  def filterLines(content: Stream[IO, Population]): Stream[IO, Population] = content
-  def processLines(stream: Stream[IO, Population]): IO[Long] =
+
+  def collect(content: Stream[IO, Population]): Stream[IO, Population] = content
+
+  def process(stream: Stream[IO, Population]): IO[Long] =
     stream.compile.last.map(_.get).map(pop => project(n, pop).sum)
-  def showOutput(result: Long): IO[Unit] =
+
+  def show(result: Long): IO[Unit] =
     IO.println(s"After $n days, the population reached $result.")
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

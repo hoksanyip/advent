@@ -15,7 +15,8 @@ object Day07 extends IOApp.Simple {
 
   type Content = Map[String, Map[String, Int]]
   val containExpr = "([a-z ]+) bags contain ([a-z0-9, ]+)\\.".r
-  def parseLine(line: String) =
+
+  def parse(line: String) =
     val containExpr(color, contains) = line
     val contents = contains
       .split(", ")
@@ -26,18 +27,21 @@ object Day07 extends IOApp.Simple {
       )
       .reduce(_ |+| _)
     Map(color -> contents)
-  def filterLines(content: Stream[IO, Content]): IO[Content] =
+
+  def collect(content: Stream[IO, Content]): IO[Content] =
     content.compile.toList.map(_.reduce(_ |+| _))
-  def processLines(stream: IO[Content]): IO[Int] =
+
+  def process(stream: IO[Content]): IO[Int] =
     stream.map { contents =>
       extractBag("shiny gold", contents) - 1
     }
-  def showOutput(result: Int): IO[Unit] =
+
+  def show(result: Int): IO[Unit] =
     IO.println(s"Number of bags: $result")
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

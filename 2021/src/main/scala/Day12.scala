@@ -40,7 +40,7 @@ object Day12 extends IOApp.Simple {
           case BigCave(_)   => navigate(graph, nextCave :: route, caveVisits)
       }
 
-  def parseLine(line: String): Graph =
+  def parse(line: String): Graph =
     line match
       case s"$from-$to" =>
         Map(
@@ -48,19 +48,21 @@ object Day12 extends IOApp.Simple {
           Cave(from) -> Set(Cave(to))
         )
 
-  def filterLines(content: Stream[IO, Graph]): IO[Graph] =
+  def collect(content: Stream[IO, Graph]): IO[Graph] =
     content.compile.toList.map(_.reduce(_ |+| _))
-  def processLines(stream: IO[Graph]): IO[Int] =
+
+  def process(stream: IO[Graph]): IO[Int] =
     stream.map { graph =>
       val routes = navigate(graph, List(StartCave()), Map.empty)
       routes.size
     }
-  def showOutput(result: Int): IO[Unit] =
+
+  def show(result: Int): IO[Unit] =
     IO.println(s"Number of routes: $result")
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

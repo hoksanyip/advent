@@ -15,19 +15,22 @@ object Day10 extends IOApp.Simple {
     if (list.size == 1) counts
     else countRoutes(list.tail, nRoutes |+| Map(list.head -> counts))
 
-  def parseLine(line: String): Int = line.toInt
-  def filterLines(content: Stream[IO, Int]): IO[List[Int]] =
+  def parse(line: String): Int = line.toInt
+
+  def collect(content: Stream[IO, Int]): IO[List[Int]] =
     content.compile.toList.map(_.sorted)
-  def processLines(stream: IO[List[Int]]): IO[Long] =
+
+  def process(stream: IO[List[Int]]): IO[Long] =
     stream.map { list =>
       countRoutes(list.reverse :+ 0, Map(list.max + 3 -> 1L))
     }
-  def showOutput(result: Long): IO[Unit] =
+
+  def show(result: Long): IO[Unit] =
     IO.println(s"Number of combinations: $result")
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

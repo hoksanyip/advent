@@ -43,22 +43,25 @@ object Day10 extends IOApp.Simple {
       input.toList.map(evalOne).reduce(_ andThen _).run(List.empty)
   }
 
-  def parseLine(line: String): Check[Inception] = Syntax.eval(line)
-  def filterLines(content: Stream[IO, Check[Inception]]): Stream[IO, Inception] =
+  def parse(line: String): Check[Inception] = Syntax.eval(line)
+
+  def collect(content: Stream[IO, Check[Inception]]): Stream[IO, Inception] =
     content
       .map(_.fold(_ => List.empty, r => r))
       .filter(_.size > 0)
-  def processLines(stream: Stream[IO, Inception]): IO[Long] =
+
+  def process(stream: Stream[IO, Inception]): IO[Long] =
     stream.compile.toList.map(inceptions =>
       val scores = inceptions.map(_.map(_.score).foldLeft(0L)(_ * 5 + _)).sorted
       scores((scores.size / 2).toInt)
     )
-  def showOutput(result: Long): IO[Unit] =
+
+  def show(result: Long): IO[Unit] =
     IO.println(s"result = $result")
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

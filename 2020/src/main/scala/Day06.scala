@@ -10,23 +10,26 @@ object Day06 extends IOApp.Simple {
 
   type AnswerGroup = List[Set[Char]]
 
-  def parseLine(lines: String): AnswerGroup =
+  def parse(lines: String): AnswerGroup =
     lines.split(" ").map(_.toSet).toList
-  def filterLines(content: Stream[IO, AnswerGroup]): IO[List[AnswerGroup]] =
+
+  def collect(content: Stream[IO, AnswerGroup]): IO[List[AnswerGroup]] =
     content.compile.toList
-  def processLines(stream: IO[List[AnswerGroup]]): IO[Int] =
+
+  def process(stream: IO[List[AnswerGroup]]): IO[Int] =
     stream.map { groups =>
       groups.map(_.reduce(_ & _).size).sum
     }
-  def showOutput(result: Int): IO[Unit] =
+
+  def show(result: Int): IO[Unit] =
     IO.println(s"Sum: $result")
 
   val lines = Parser
     .readContent(sourceFile, Some(year))
     .through(Parser.groupSplitBy(""))
     .map(_.mkString(" "))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

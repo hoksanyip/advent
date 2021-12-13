@@ -19,11 +19,12 @@ object Day04 extends IOApp.Simple {
     val last = draws.values(index)
     (index, unmatched * last)
 
-  def parseLine(line: List[String], idx: Long): GameData = idx match {
+  def parse(line: List[String], idx: Long): GameData = idx match {
     case 0 => Draws(line(0).split(",").map(_.toInt).toList)
     case _ => Board(line.map(_.trim().split(" +").toList.map(_.toInt)))
   }
-  def filterLines(content: Stream[IO, GameData]): Stream[IO, (Draws, Board)] =
+
+  def collect(content: Stream[IO, GameData]): Stream[IO, (Draws, Board)] =
     content
       .mapAccumulate(Draws(List.empty))((_, _) match {
         case (_, data: Draws)          => (data, Board(List.empty))
@@ -31,15 +32,16 @@ object Day04 extends IOApp.Simple {
         case _                         => (Draws(List.empty), Board(List.empty))
       })
       .drop(1)
-  def processLines(stream: Stream[IO, (Draws, Board)]): IO[Int] =
+
+  def process(stream: Stream[IO, (Draws, Board)]): IO[Int] =
     stream.compile.toList.map(_.map(findBingo).maxBy(_._1)._2)
 
-  def showOutput(result: Int): IO[Unit] =
+  def show(result: Int): IO[Unit] =
     IO.println(s"Wining score: $result")
 
   val lines = Parser.groupSplitBy("")(Parser.readContent(sourceFile, Some(year))).zipWithIndex
-  val content = lines.map(parseLine)
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.map(parse)
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

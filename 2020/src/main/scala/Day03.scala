@@ -14,13 +14,13 @@ object Day03 extends IOApp.Simple {
     if (line.id % down != 0) 0L
     else line.trees((line.id / down) * right % line.len)
 
-  def parseLine(line: String): Line =
+  def parse(line: String): Line =
     Line(0, line.size, line.map(x => if (x == '#') 1L else 0L))
 
-  def filterLines(stream: Stream[IO, Line]) =
+  def collect(stream: Stream[IO, Line]) =
     stream.mapAccumulate(0)((acc, line) => (acc + 1, line.copy(id = acc))).map(_._2)
 
-  def processLines(stream: Stream[IO, Line]) =
+  def process(stream: Stream[IO, Line]) =
     stream
       .map(line =>
         (
@@ -36,12 +36,12 @@ object Day03 extends IOApp.Simple {
       .map(_.reduce(_ |+| _))
       .map(_.toList.reduce(_ * _))
 
-  def showOutput(result: Long): IO[Unit] =
+  def show(result: Long): IO[Unit] =
     IO.println(s"Product of sum = $result")
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

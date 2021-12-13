@@ -74,14 +74,13 @@ object Day04 extends IOApp.Simple {
       getField(field)(passport).flatMap(checkInColor)
   }
 
-  val expr = "([a-z]{3}):(.*)".r
-  def parseLine(line: String) =
+  def parse(line: String) =
     line
       .split(" ")
-      .map(_ match { case expr(fieldname, fieldvalue) => fieldname -> fieldvalue })
+      .map(_ match { case s"$fieldname:$fieldvalue" => fieldname -> fieldvalue })
       .toMap
 
-  def filterLines(content: Stream[IO, Validator.Data]) =
+  def collect(content: Stream[IO, Validator.Data]) =
     content
       .filter(Validator.checkYearBetween("byr", 1920, 2002)(_).isRight)
       .filter(Validator.checkYearBetween("iyr", 2010, 2020)(_).isRight)
@@ -91,10 +90,10 @@ object Day04 extends IOApp.Simple {
       .filter(Validator.checkEyeColor("ecl")(_).isRight)
       .filter(Validator.checkPid("pid", 9)(_).isRight)
 
-  def processLines(stream: Stream[IO, Map[String, String]]): IO[Long] =
+  def process(stream: Stream[IO, Map[String, String]]): IO[Long] =
     stream.compile.count
 
-  def showOutput[A](result: IO[Long]): IO[Unit] = result.flatMap { number =>
+  def show[A](result: IO[Long]): IO[Unit] = result.flatMap { number =>
     IO.println(s"Number of valid passports: $number")
   }
 
@@ -102,8 +101,8 @@ object Day04 extends IOApp.Simple {
     .readContent(sourceFile, Some(year))
     .through(Parser.groupSplitBy(""))
     .map(_.mkString(" "))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = showOutput(result)
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = show(result)
 }

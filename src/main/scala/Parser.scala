@@ -29,12 +29,12 @@ object Parser {
     *
     * Applies a function String => A to each line, and in case of error, prints the error and
     * continue with the next line.
-    * @param parseLine a function to convert a line to something else (A)
+    * @param parse a function to convert a line to something else (A)
     * @return A `Pipe[IO, String, A]` object to be applied to the stream.
     */
-  def parseLines[A](parseLine: String => A): Pipe[IO, String, A] = { stream =>
+  def parseLine[A](parse: String => A): Pipe[IO, String, A] = { stream =>
     stream
-      .map(i => Try(parseLine(i)).toEither)
+      .map(i => Try(parse(i)).toEither)
       .evalTap(_.fold(x => IO.println(x.toString), _ => IO {}))
       .filter(_.isRight)
       .map(_.toOption.get)

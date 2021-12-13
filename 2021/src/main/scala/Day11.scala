@@ -37,24 +37,28 @@ object Day11 extends IOApp.Simple {
     if (newBoard.values.filter(_ != -1).size == 0) steps
     else iterateUntilSuperFlash(steps + 1, newBoard)
 
-  def parseLine(line: String): List[(Int, Int)] =
+  def parse(line: String): List[(Int, Int)] =
     line.toList.map(_.toString.toInt).zipWithIndex.map(_.swap)
-  def filterLines(content: Stream[IO, List[(Int, Int)]]): Stream[IO, Cell] =
+
+  def collect(content: Stream[IO, List[(Int, Int)]]): Stream[IO, Cell] =
     content.zipWithIndex.map { (col, i) =>
       col.map(v => (i.toInt, v._1) -> v._2).toMap
     }
-  def processLines(stream: Stream[IO, Cell])(using monoid: Monoid[List[Cell]]): IO[Int] =
+
+  def process(stream: Stream[IO, Cell])(using monoid: Monoid[List[Cell]]): IO[Int] =
     stream.compile.toList.map { coords =>
       iterateUntilSuperFlash(1, coords.combineAll)
     }
-  def showOutput(result: Int): IO[Unit] =
+
+  def show(result: Int): IO[Unit] =
     IO.println(s"Steps until full flash: $result")
+
   def print(board: Cell): Unit =
     (0 to 9).foreach { i => println((0 to 9).map { j => math.max(board(i, j), 0) }.mkString) }
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

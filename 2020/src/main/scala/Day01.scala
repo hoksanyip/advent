@@ -9,10 +9,11 @@ object Day01 extends IOApp.Simple {
   val year = 2020
   val total = 2020
 
-  def parseLine(line: String): Int = line.toInt
-  def filterLines(content: Stream[IO, Int]): Stream[IO, Int] = content
+  def parse(line: String): Int = line.toInt
 
-  def processLines(stream: Stream[IO, Int]): IO[Option[Int]] =
+  def collect(content: Stream[IO, Int]): Stream[IO, Int] = content
+
+  def process(stream: Stream[IO, Int]): IO[Option[Int]] =
     stream.compile.toList
       .map { numbers =>
         for {
@@ -23,7 +24,7 @@ object Day01 extends IOApp.Simple {
       }
       .map(_.headOption)
 
-  def showOutput(result: IO[Option[Int]]): IO[Unit] = result.flatMap {
+  def show(result: IO[Option[Int]]): IO[Unit] = result.flatMap {
     _ match {
       case Some(x) => IO.println(s"Found first match, with product = $x")
       case None    => IO.println("Cannot find any matches")
@@ -31,8 +32,8 @@ object Day01 extends IOApp.Simple {
   }
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = showOutput(result)
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = show(result)
 }

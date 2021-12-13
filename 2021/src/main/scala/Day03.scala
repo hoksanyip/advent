@@ -18,9 +18,11 @@ object Day03 extends IOApp.Simple {
     else if (f(2 * x.size, list.size)) reduceToCommon(f)(acc + mValue, m - 1, x.map(_ - mValue))
     else reduceToCommon(f)(acc, m - 1, y)
 
-  def parseLine(line: String): Int = Integer.parseInt(line, 2)
-  def filterLines(content: Stream[IO, Int]): Stream[IO, Int] = content
-  def processLines(stream: Stream[IO, Int]): IO[(Int, Int)] =
+  def parse(line: String): Int = Integer.parseInt(line, 2)
+
+  def collect(content: Stream[IO, Int]): Stream[IO, Int] = content
+
+  def process(stream: Stream[IO, Int]): IO[(Int, Int)] =
     for {
       l <- stream.compile.toList
       n = math.ceil(math.log(l.max) / math.log(2)).toInt
@@ -28,12 +30,12 @@ object Day03 extends IOApp.Simple {
       scrubber = reduceToCommon(_ < _)(0, n - 1, l)
     } yield (oxygen, scrubber)
 
-  def showOutput(result: (Int, Int)): IO[Unit] =
+  def show(result: (Int, Int)): IO[Unit] =
     IO.println(s"Oxygen: ${result._1}, Scrubber: ${result._2}, Life: ${result._1 * result._2}")
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

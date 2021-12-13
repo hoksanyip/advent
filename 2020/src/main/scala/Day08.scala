@@ -7,12 +7,7 @@ object Day08 extends IOApp.Simple {
   val sourceFile = "day08.txt"
   val year = 2020
 
-  // Parse line
-  val expr = "(\\w+) ([+-]\\d+)".r
   case class Instruction(action: String, number: Int)
-  def parseLine(line: String): Instruction = line match {
-    case expr(action, number) => Instruction(action, number.toInt)
-  }
 
   // Solver
   enum Status { case Finite, Ongoing, Loop }
@@ -40,7 +35,11 @@ object Day08 extends IOApp.Simple {
     }
   }
 
-  def processLines(stream: Stream[IO, Instruction]): IO[Option[Int]] = {
+  def parse(line: String): Instruction =
+    line match
+      case s"$action $number" => Instruction(action, number.toInt)
+
+  def process(stream: Stream[IO, Instruction]): IO[Option[Int]] = {
     val instructions: IO[Map[Long, Instruction]] =
       stream.zipWithIndex.map(_.swap).compile.toList.map(_.toMap)
 
@@ -57,13 +56,13 @@ object Day08 extends IOApp.Simple {
     }
   }
 
-  def showOutput(result: IO[Option[Int]]): IO[Unit] = result.flatMap {
+  def show(result: IO[Option[Int]]): IO[Unit] = result.flatMap {
     case Some(x) => IO.println(s"Accumulator value: $x")
     case None    => IO.println("Cannot found result.")
   }
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val result = processLines(content)
-  val run = showOutput(result)
+  val content = lines.through(Parser.parseLine(parse))
+  val result = process(content)
+  val run = show(result)
 }

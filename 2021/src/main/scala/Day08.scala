@@ -33,21 +33,23 @@ object Day08 extends IOApp.Simple {
     val d0 = digits.filter(d => d.size == 6 & !(d4 -- d1).subsetOf(d))(0)
     IndexedSeq(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9)
 
-  def parseLine(line: String): Int =
+  def parse(line: String): Int =
     val pipe = line.split(" \\| ")
     val digits = pipe(0).split(" ").map(parseDigit).toList.sortBy(_.size)
     val screen = pipe(1).split(" ").map(parseDigit).toList
     screen.map(wireSegments(digits).indexOf).foldLeft(0)(_ * 10 + _)
-  def filterLines(content: Stream[IO, Int]): Stream[IO, Int] = content
-  def processLines(stream: Stream[IO, Int]): IO[Int] =
+
+  def collect(content: Stream[IO, Int]): Stream[IO, Int] = content
+
+  def process(stream: Stream[IO, Int]): IO[Int] =
     stream.compile.toList.map(_.sum)
 
-  def showOutput(result: Int): IO[Unit] =
+  def show(result: Int): IO[Unit] =
     IO.println(s"Output: $result")
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

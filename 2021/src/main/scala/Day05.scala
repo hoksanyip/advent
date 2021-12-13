@@ -12,11 +12,12 @@ object Day05 extends IOApp.Simple {
   case class Coordinate(x: Int, y: Int)
   case class Line(start: Coordinate, end: Coordinate)
 
-  def parseLine(line: String): Line =
+  def parse(line: String): Line =
     val expr = "([0-9]+),([0-9]+) -> ([0-9]+),([0-9]+)".r
     val expr(x1, y1, x2, y2) = line
     Line(Coordinate(x1.toInt, y1.toInt), Coordinate(x2.toInt, y2.toInt))
-  def filterLines(content: Stream[IO, Line]): Stream[IO, Freq] = content.map { line =>
+
+  def collect(content: Stream[IO, Line]): Stream[IO, Freq] = content.map { line =>
     val dy = (line.end.y - line.start.y)
     val dx = (line.end.x - line.start.x)
     val iter = if (dx.abs > dy.abs) dx.abs else dy.abs
@@ -25,16 +26,17 @@ object Day05 extends IOApp.Simple {
       .map(_ -> 1)
       .toMap
   }
-  def processLines(stream: Stream[IO, Freq]): IO[Freq] =
+  def process(stream: Stream[IO, Freq]): IO[Freq] =
     stream.compile.toList
       .map(_.reduce(_ |+| _))
-  def showOutput(result: Freq): IO[Unit] =
+
+  def show(result: Freq): IO[Unit] =
     val count = result.filter((x, y) => y > 1).size
     IO.println(s"Number of overlapping points: $count")
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

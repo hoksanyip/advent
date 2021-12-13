@@ -8,14 +8,17 @@ object Dayxx extends IOApp.Simple {
   val sourceFile = "dayxx.txt"
   val year = 2021
 
-  def parseLine(line: String) = ???
-  def filterLines(content: Stream[IO, _]): Stream[IO, _] = ???
-  def processLines(stream: Stream[IO, _]): IO[_] = ???
-  def showOutput(result: Any): IO[Unit] = ???
+  def parse(line: String) = ???
+
+  def collect(content: Stream[IO, _]): Stream[IO, _] = ???
+
+  def process(stream: Stream[IO, _]): IO[_] = ???
+
+  def show(result: Any): IO[Unit] = ???
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }

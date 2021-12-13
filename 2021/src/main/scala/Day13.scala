@@ -27,31 +27,32 @@ object Day13 extends IOApp.Simple {
       coords.map(flipCoord(instruction))
   }
 
-  def parseLine(line: String): Collection = line match
+  def parse(line: String): Collection = line match
     case s"$x,$y"                   => (Set(Coord(x.toInt, y.toInt)), Seq.empty[Instruction])
     case s"fold along $axis=$coord" => (Set.empty[Coord], Seq(Instruction(axis(0), coord.toInt)))
     case _                          => (Set.empty[Coord], Seq.empty[Instruction])
 
-  def filterLines(content: Stream[IO, Collection]): IO[Collection] =
+  def collect(content: Stream[IO, Collection]): IO[Collection] =
     content.compile.toList.map(_.reduce(_ |+| _))
 
-  def processLines(stream: IO[Collection]): IO[Set[Coord]] =
+  def process(stream: IO[Collection]): IO[Set[Coord]] =
     stream.map { (indices, instructions) => instructions.foldLeft(indices)(Coord.fillAll) }
 
-  def showOutput(result: Set[Coord]): IO[Unit] =
+  def show(result: Set[Coord]): IO[Unit] =
+    val boundary = result.foldLeft(Coord(0, 0))(Coord.max)
     (0 to boundary._2).toList
       .map { i =>
         IO.println(
           (0 to boundary._1).map { j =>
-            if (row contains (j, i)) "#" else "."
+            if (result contains (j, i)) "#" else "."
           }.mkString
         )
       }
       .reduce(_ *> _)
 
   val lines = Parser.readContent(sourceFile, Some(year))
-  val content = lines.through(Parser.parseLines(parseLine))
-  val filtered = filterLines(content)
-  val result = processLines(filtered)
-  val run = result >>= showOutput
+  val content = lines.through(Parser.parseLine(parse))
+  val data = collect(content)
+  val result = process(data)
+  val run = result >>= show
 }
