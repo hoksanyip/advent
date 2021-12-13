@@ -1,5 +1,6 @@
 import cats._
 import cats.implicits._
+import cats.data.Writer
 import cats.effect.{IO, IOApp}
 import cats.effect.unsafe.implicits.global
 import fs2.Stream
@@ -8,62 +9,49 @@ object Day13 extends IOApp.Simple {
   val sourceFile = "day13.txt"
   val year = 2021
 
-  val lines = Parser.groupSplitBy("")(Parser.readContent(sourceFile, Some(year)))
-  val stream = lines.compile.toList
-
   case class Instruction(axis: Char, loc: Int)
+  type Coord = (Int, Int)
+  type Collection = (Set[Coord], Seq[Instruction])
 
-  class Coord(val x: Int, val y: Int)
   object Coord {
-    // Constructors
-    def apply(x: Int, y: Int): Coord = new Coord(x, y)
-    def empty(): Coord = Coord(0, 0)
-
-    // Get boundary
-    def max(a: Coord, b: Coord) = Coord(math.max(a.x, b.x), math.max(a.y, b.y))
+    def apply(x: Int, y: Int): Coord = (x, y)
+    def max(a: Coord, b: Coord) = Coord(math.max(a._1, b._1), math.max(a._2, b._2))
 
     // Fold mechanism
     def flipAxis(loc: Int, z: Int): Int = if (z <= loc) z else loc * 2 - z
-    def flipAt(instr: Instruction)(coord: Coord): Coord =
+    def flipCoord(instr: Instruction)(coord: Coord): Coord =
       instr.axis match
-        case 'x' => Coord(flipAxis(instr.loc, coord.x), coord.y)
-        case 'y' => Coord(coord.x, flipAxis(instr.loc, coord.y))
-    def foldAt(coords: Set[Coord], instruction: Instruction): Set[Coord] =
-      coords.map(flipAt(instruction))
-
-    // Show
-    def filterRow(coords: Set[Coord], i: Int) = coords.filter(_.y == i)
-    def filterColumn(coords: Set[Coord], j: Int) = coords.filter(_.x == j)
-
-    def encodeRow(nCol: Int)(row: Set[Coord]) =
-      (0 to nCol)
-        .map(c => filterColumn(row, c).size > 0)
-        .map(c => if (c) "#" else ".")
-        .mkString
-
-    def showIO(coords: Set[Coord]): IO[Unit] = {
-      val boundary = coords.foldLeft(empty())(max)
-      val rows = (0 to boundary.y).map(filterRow(coords, _))
-      rows.map(encodeRow(boundary.x)).map(IO.println).toList.sequence *> ().pure[IO]
-    }
+        case 'x' => Coord(flipAxis(instr.loc, coord._1), coord._2)
+        case 'y' => Coord(coord._1, flipAxis(instr.loc, coord._2))
+    def fillAll(coords: Set[Coord], instruction: Instruction): Set[Coord] =
+      coords.map(flipCoord(instruction))
   }
 
-  val result: IO[Set[Coord]] = stream.map { contents =>
-    // Parse matrix
-    val indices = contents(0).map { 
-      _ match 
-        case s"$x,$y" => Coord(x.toInt, y.toInt) 
-    }.toSet
+  def parseLine(line: String): Collection = line match
+    case s"$x,$y"                   => (Set(Coord(x.toInt, y.toInt)), Seq.empty[Instruction])
+    case s"fold along $axis=$coord" => (Set.empty[Coord], Seq(Instruction(axis(0), coord.toInt)))
+    case _                          => (Set.empty[Coord], Seq.empty[Instruction])
 
-    // Parse instructions
-    val instructions = contents(1).map {
-      _ match
-        case s"fold along $axis=$coord" => Instruction(axis(0), coord.toInt)
-    }
+  def filterLines(content: Stream[IO, Collection]): IO[Collection] =
+    content.compile.toList.map(_.reduce(_ |+| _))
 
-    // Fold paper
-    instructions.foldLeft(indices)(Coord.foldAt)
-  }
+  def processLines(stream: IO[Collection]): IO[Set[Coord]] =
+    stream.map { (indices, instructions) => instructions.foldLeft(indices)(Coord.fillAll) }
 
-  val run = result >>= Coord.showIO
+  def showOutput(result: Set[Coord]): IO[Unit] =
+    (0 to boundary._2).toList
+      .map { i =>
+        IO.println(
+          (0 to boundary._1).map { j =>
+            if (row contains (j, i)) "#" else "."
+          }.mkString
+        )
+      }
+      .reduce(_ *> _)
+
+  val lines = Parser.readContent(sourceFile, Some(year))
+  val content = lines.through(Parser.parseLines(parseLine))
+  val filtered = filterLines(content)
+  val result = processLines(filtered)
+  val run = result >>= showOutput
 }

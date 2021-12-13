@@ -13,4 +13,4 @@ stats_url = "https://adventofcode.com/{year}/leaderboard/private/view/{board_id}
 input_url = "https://adventofcode.com/{year}/day/{day}/input".format(year=year, day=day)
 
 path_stats = "src/main/resources/stats.csv"
-path_input_data = "{year}/src/main/resources/{day}.txt".format(year=year, day=day)
+path_input_data = "{year}/src/main/resources/day{day}.txt".format(year=year, day=day)
