@@ -1,4 +1,3 @@
-import sys
 from src.main.python.get_data import download_data
 from src.main.python.update_stats import request_stats
 
