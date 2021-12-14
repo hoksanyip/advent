@@ -9,54 +9,40 @@ import scala.annotation.tailrec
     * Import data
     * **********************************************
     */
-  type Pair = (Char, Char)
-  type Mapper = Map[Pair, Map[Pair, Long]]
-  type Freq = Map[Pair, Long]
-  object Freq {
-    def apply(a: Char, b: Char, c: Long = 1) = Map((a, b) -> c)
-  }
-  def parse(input: List[String]): (Seq[Char], Map[Pair, Char]) =
-    val expr = "([A-Z])([A-Z]) -> ([A-Z])".r
-    val cutOff = input.indexOf("")
-    val (left, right) = input.splitAt(cutOff)
-    val templates = left.head.toList.toSeq
-    val rules = right.tail.map { case expr(a, b, c) => (a(0), b(0)) -> c(0) }.toMap
-    (templates, rules)
-
   val input = Source.fromFile("2021/src/main/resources/day14.txt").getLines.toList
-  val (template, rules) = parse(input)
+  val template = input.head.toList.toSeq
+  val rules = input.tail.tail.map { case s"$l -> $r" => (l(0), l(1)) -> r(0) }.toMap
 
   /** **********************************************
     * Prepare
     * **********************************************
     */
-  val counts = (template.dropRight(1) zip template.drop(1))
-    .groupBy(identity)
-    .map(_ -> _.size.toLong)
+  type Pair = (Char, Char)
+  type Freq = Map[Pair, Long]
+  object Counter {
+    def apply[A](link: (A, Long)*) = link.map { case (a, c) => Map(a -> c) }.combineAll
+  }
+  implicit class MapSyntax[A](m: Map[A, Long]) {
+    def `*`(n: Long) = m.map((k, v) => k -> v * n)
+  }
 
-  val mapper = rules.map { case (p @ (a, b), c) => p -> (Freq(a, b) |+| Freq(c, b)) }
+  val counts = template.zip(template.tail).groupBy(identity).map(_ -> _.size.toLong)
+  val mapper = rules.map { case (p @ (a, b), c) => p -> Counter((a, c) -> 1L, (c, b) -> 1L) }
 
   /** **********************************************
     * Process
     * **********************************************
     */
   @tailrec
-  def travel(mapper: Mapper)(freq: Freq, depth: Int = 0): Freq =
+  def travel(mapper: Map[Pair, Freq])(freq: Freq, depth: Int = 0): Freq =
     if (depth == 0) freq
-    else
-      val newFreq = freq
-        .map { (k, n) =>
-          mapper(k).map((p, m) => p -> n * m)
-        }
-        .reduce(_ |+| _)
-      travel(mapper)(newFreq, depth - 1)
+    else travel(mapper)(freq.map((k, n) => mapper(k) * n).reduce(_ |+| _), depth - 1)
 
   val n = 40
   val occs = travel(mapper)(counts, n)
-    .map { case ((a, b), n) => Map(a -> n) |+| Map(b -> n) }
+    .map { case ((a, b), n) => Counter(a -> n) }
     .reduce(_ |+| _)
-    .pipe { _ |+| Map(template.head -> 1, template.last -> 1) }
-    .map((k, v) => k -> v / 2)
+    .pipe { _ |+| Counter(template.last -> 1) }
 
   /** **********************************************
     * Output
