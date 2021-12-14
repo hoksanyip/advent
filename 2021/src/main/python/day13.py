@@ -35,5 +35,5 @@ for axis, coord in fold:
 #################################################
 # Output
 #################################################
-with np.printoptions(formatter={"all": lambda x: "#" if x > 0 else "."}, linewidth=1000):
+with np.printoptions(formatter={"all": lambda x: "\u2588" if x > 0 else " "}, linewidth=1000):
     print(paper)

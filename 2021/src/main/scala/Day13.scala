@@ -1,14 +1,18 @@
 import scala.io.Source
+import scala.util.chaining._
 
 @main def Day13 = {
-  /************************************************
-   * Import data
-   ************************************************/
+
+  /** **********************************************
+    * Import data
+    * **********************************************
+    */
   val input = Source.fromFile("2021/src/main/resources/day13.txt").getLines.toList
 
-  /************************************************
-   * Prepare
-   ************************************************/
+  /** **********************************************
+    * Prepare
+    * **********************************************
+    */
   type Coord = (Int, Int)
   type Instruction = (Char, Int)
   def parse(input: List[String]): (List[Coord], Seq[Instruction]) =
@@ -20,9 +24,10 @@ import scala.io.Source
     )
   val (coords, instructions) = parse(input)
 
-  /************************************************
-   * Process
-   ************************************************/
+  /** **********************************************
+    * Process
+    * **********************************************
+    */
   def process(indices: List[Coord], instructions: Seq[Instruction]): List[Coord] =
     instructions.foldLeft(indices) { case (coords, (axis, loc)) =>
       axis match
@@ -31,15 +36,16 @@ import scala.io.Source
     }
   val endCoords = process(coords, instructions)
 
-  /************************************************
-   * Output
-   ************************************************/
+  /** **********************************************
+    * Output
+    * **********************************************
+    */
   def show(result: List[Coord]) =
-    val boundary = result.foldLeft((0, 0)) { case ((x, y), (a, b)) => (math.max(x, a), math.max(y, b)) }
-    (0 to boundary._2).toList
+    val boundary = result.unzip.pipe(_.max -> _.max)
+    (0 to boundary._2)
       .map { i =>
         (0 to boundary._1).map { j =>
-          if (result contains (j, i)) "#" else "."
+          if (result contains (j, i)) 9608.toChar else " "
         }.mkString
       }
       .mkString("\n")
