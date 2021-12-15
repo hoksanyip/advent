@@ -30,9 +30,8 @@ import scala.annotation.tailrec
   val graph: Graph[Int] = input
     .map(_.toSeq.map(_.asDigit))
     .toSeq
-    .map { row => (0 to 4).flatMap(i => row.map(c => (c + i) % 9)) }
-    .pipe { g => (0 to 4).flatMap(i => g.map(_.map(c => (c + i) % 9))) }
-    .map(_.map(c => if (c == 0) 9 else c))
+    .map { row => (0 to 4).flatMap(i => row.map(c => (c - 1 + i) % 9 + 1)) }
+    .pipe { g => (0 to 4).flatMap(i => g.map(_.map(c => (c - 1 + i) % 9 + 1))) }
 
   /** **********************************************
     * Process
