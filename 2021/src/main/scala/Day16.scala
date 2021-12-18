@@ -39,16 +39,19 @@ import scala.util.chaining._
         typeId  <- take(3).map(toLong)
 
         // Define length of subpackages if applicable
-        id      <- if (typeId == 4)  take(0).map(_ => -1L)
-                   else              take(1).map(toLong)
-        n       <- if (id == 0)      take(15).map(toLong).map(_.toInt)
-                   else if (id == 1) take(11).map(toLong).map(_.toInt)
-                   else              take(0).map(_ => -1)
+        id <-
+          if (typeId == 4) take(0).map(_ => -1L)
+          else take(1).map(toLong)
+        n <-
+          if (id == 0) take(15).map(toLong).map(_.toInt)
+          else if (id == 1) take(11).map(toLong).map(_.toInt)
+          else take(0).map(_ => -1)
         // Get content
-        len     <- peekSize
-        pkg     <- if (id == 0)      parseSize(len - n).map(d => Operator(version, typeId, d))
-                   else if (id == 1) parseN(n).map(d => Operator(version, typeId, d))
-                   else              parseData.map(b => Operand(version, typeId, toLong(b)))
+        len <- peekSize
+        pkg <-
+          if (id == 0) parseSize(len - n).map(d => Operator(version, typeId, d))
+          else if (id == 1) parseN(n).map(d => Operator(version, typeId, d))
+          else parseData.map(b => Operand(version, typeId, toLong(b)))
       } yield pkg
 
     // Parse literal in binary format
@@ -67,8 +70,9 @@ import scala.util.chaining._
     def parseSize(n: Int): Parser[List[Content]] = for {
       head <- parse
       len  <- peekSize
-      tail <- if (len > n) parseSize(n)
-              else         take(0).map(_ => Nil)
+      tail <-
+        if (len > n) parseSize(n)
+        else take(0).map(_ => Nil)
     } yield (head :: tail)
   }
 
@@ -77,18 +81,18 @@ import scala.util.chaining._
     * **********************************************
     */
   def process(pkg: Content): Long = pkg match
-      case Operand(_, _, value) => value.toLong
-      case Operator(_, typeId, data) =>
-        val values = data.map(process)
-        typeId match
-          case 0 => values.reduce(_ + _)
-          case 1 => values.reduce(_ * _)
-          case 2 => values.min
-          case 3 => values.max
-          case 4 => values.sum // will be taken care of in case Data.
-          case 5 => values.pipe { l => if (l(0) > l(1)) 1 else 0 }
-          case 6 => values.pipe { l => if (l(0) < l(1)) 1 else 0 }
-          case 7 => values.pipe { l => if (l(0) == l(1)) 1 else 0 }
+    case Operand(_, _, value) => value.toLong
+    case Operator(_, typeId, data) =>
+      val values = data.map(process)
+      typeId match
+        case 0 => values.reduce(_ + _)
+        case 1 => values.reduce(_ * _)
+        case 2 => values.min
+        case 3 => values.max
+        case 4 => values.sum // will be taken care of in case Data.
+        case 5 => values.pipe { l => if (l(0) > l(1)) 1 else 0 }
+        case 6 => values.pipe { l => if (l(0) < l(1)) 1 else 0 }
+        case 7 => values.pipe { l => if (l(0) == l(1)) 1 else 0 }
 
   val content = Parser.parse.runA(binaries).value
   val result = process(content)

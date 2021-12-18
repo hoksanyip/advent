@@ -16,118 +16,90 @@ import scala.annotation.tailrec
     * Prepare
     * **********************************************
     */
-  trait Number
-  case class Regular(value: Int) extends Number {
+  trait Tree { def magnitude: Int }
+  case class Leaf(value: Int) extends Tree {
     override def toString = value.toString
+    def magnitude = value
   }
-  case class Empty() extends Number
-  case class Pair(left: Number = Empty(), right: Number = Empty()) extends Number {
+  case class Empty() extends Tree { def magnitude = 0 }
+  case class Branch(left: Tree = Empty(), right: Tree = Empty()) extends Tree {
     override def toString = s"[${left.toString},${right.toString}]"
+    def magnitude = left.magnitude * 3 + right.magnitude * 2
   }
 
-  object Number {
+  object Tree {
     // Building blocks
-    type Stack = List[Number]
-    type Parser = Reader[Stack, Stack]
-    def id: Parser = Reader[Stack, Stack] { stack => stack }
-    def create(number: Int): Parser = Reader[Stack, Stack] { stack => Regular(number) :: stack }
-    def openPair: Parser = Reader[Stack, Stack] { stack => Pair() :: stack }
-    def append: Parser = Reader[Stack, Stack] { stack =>
+    type Stack = List[Tree]
+    def id = Reader[Stack, Stack] { stack => stack }
+    def leaf(number: Int) = Reader[Stack, Stack] { stack => Leaf(number) :: stack }
+    def openBranch = Reader[Stack, Stack] { stack => Branch() :: stack }
+    def append = Reader[Stack, Stack] { stack =>
       stack match
-        case head :: Pair(Empty(), _) :: tail => Pair(head) :: tail
-        case head :: Pair(l, Empty()) :: tail => Pair(l, head) :: tail
-        case head :: Nil                      => List(head)
-        case _                                => Nil
+        case head :: Branch(Empty(), _) :: tail => Branch(head) :: tail
+        case head :: Branch(l, Empty()) :: tail => Branch(l, head) :: tail
+        case head :: Nil                        => List(head)
+        case _                                  => Nil
     }
     // Evaluation / application of building blocks
-    def eval(syntax: Char): Parser =
+    def eval(syntax: Char) =
       syntax match
-        case '[' => openPair
+        case '[' => openBranch
         case ']' => append
         case ',' => id
-        case _   => create(syntax.asDigit) andThen append
+        case _   => leaf(syntax.asDigit) andThen append
     // Composition of building blocks
-    def apply(line: String): Number = line.toList.map(eval).reduce( _ andThen _).run(List.empty)(0)
+    def apply(line: String): Tree = line.toList.map(eval).reduce(_ andThen _).run(List.empty)(0)
   }
-  val numbers = input.map(Number.apply)
+  val numbers = input.map(Tree.apply)
 
   /** **********************************************
     * Process
     * **********************************************
     */
   object Operator {
-    // ---------- Explode --------------
-    case class Boom(l: Int = 0, r: Int = 0)
-    def spread(number: Number, boom: Boom): Number = number match
-        case Regular(r) => Regular(r + boom.l + boom.r)
-        case Pair(l, r) => Pair(spread(l, boom.copy(r = 0)), spread(r, boom.copy(l = 0)))
-        case _          => number
 
-    def explode(number: Number, level: Int = 0, boom: Option[Boom] = None): (Option[Boom], Number) = {
-      (boom, number) match
-        // If one has already exploded
-        case (Some(_), _) => (boom, number)
+    def explode(number: Tree): Either[Tree, Tree] =
+      def accumulate(dl: Int, number: Tree, dr: Int): Tree =
+        number match
+          case Leaf(v)      => Leaf(dl + v + dr)
+          case Branch(l, r) => Branch(accumulate(dl, l, 0), accumulate(0, r, dr))
+          case _            => number
 
-        // Check elementairy pair for explode
-        case (None, Pair(Regular(l), Regular(r))) =>
-          if (level >= 4) (Some(Boom(l, r)), Regular(0))
-          else            (None, number)
+      def _explode(number: Tree, level: Int = 0): Option[(Int, Tree, Int)] =
+        number match
+          case Leaf(v)                                  => None // Assymetric branch ==> do nothing
+          case Branch(Leaf(l), Leaf(r)) if (level >= 4) => Some(l, Leaf(0), r) // Local end
+          case Branch(l, r) => // Go deeper
+            _explode(l, level + 1).map { (dl, v, dr) =>
+              (dl, Branch(v, accumulate(dr, r, 0)), 0)
+            } orElse _explode(r, level + 1).map { (dl, v, dr) =>
+              (0, Branch(accumulate(0, l, dl), v), dr)
+            }
+          case _ => None // Probably not occurring
 
-        // Is no previous explode occured, check further
-        case (None, p@Pair(l, r)) =>
-          (explode(l, level + 1), explode(r, level + 1)) match
-            case ((Some(boom), left), _) => 
-              ( Some(Boom(boom.l, 0)), Pair(left, spread(r, Boom(boom.r, 0))) )
-            case (_, (Some(boom), right)) => 
-              ( Some(Boom(0, boom.r)), Pair(spread(l, Boom(0, boom.l)), right) )
-            case _ => (None, p)
+      _explode(number).map(_._2).toLeft(number)
+    end explode
 
-        // Probably not occurring
-        case _ => (None, number)
-    }
+    def split(number: Tree): Either[Tree, Tree] =
+      def _split(number: Tree): Option[Tree] =
+        number match
+          case Leaf(r) if (r >= 10) =>
+            Some(Branch(Leaf(r / 2), Leaf(r - r / 2)))
+          case Branch(l, r) =>
+            _split(l)
+              .map(v => Branch(v, r))
+              .orElse { _split(r).map(v => Branch(l, v)) }
+          case _ => None
 
-    // ---------- Split --------------
-    def split(number: Number): Either[Number, Number] =
-      number match
-        case Regular(r) => 
-          if (r < 10) Right(number)
-          else Left(Pair( Regular(r / 2), Regular(r / 2 + (r % 2))))
-        case p: Pair => 
-          split(p.left) match
-            case Left(l)  => Left(Pair(l, p.right))
-            case Right(l) =>
-              split(p.right) match
-                case Left(r) => Left(Pair(l, r))
-                case Right(r) => Right(Pair(l, r))
-        case _ => Right(number)
+      _split(number).toLeft(number)
+    end split
 
-    // ---------- Reduce --------------
-    def reduce(number: Number): Number =
-      explode(number) match
-        case (Some(_), newNumber) => reduce(newNumber)
-        case _ =>
-          split(number) match
-            case Left(n)  => reduce(n)
-            case Right(n) => n
-
-    // --------- addition ------------
-    def add(a: Number, b: Number): Number = reduce(Pair(a, b))
-
-    // --------- magnitude of number ----
-    def magnitude(number: Number): Int =
-      number match
-        case Regular(r) => r
-        case Pair(l, r) => magnitude(l) * 3 + magnitude(r) * 2
-        case _          => 0
-
+    // Combinating
+    def reduce(number: Tree): Tree = explode(number).flatMap(l => split(l)).fold(reduce, identity)
+    def add(a: Tree, b: Tree): Tree = reduce(Branch(a, b))
   }
 
-  val result = (
-    for {
-      x <- numbers
-      y <- numbers
-    } yield Operator.magnitude(Operator.add(x,y))
-  ).max
+  val result = (numbers, numbers).tupled.map(Operator.add).map(_.magnitude).max
 
   /** **********************************************
     * Output
@@ -135,7 +107,7 @@ import scala.annotation.tailrec
     */
   def show(result: Int) =
     println(s"Max pairwise sum: $result")
-  
+
   show(result)
 
 }
