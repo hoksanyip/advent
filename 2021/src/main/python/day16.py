@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List, Tuple
 from functools import reduce
 
 #################################################
@@ -20,45 +19,52 @@ class Package():
     value: int
     children: list
 
+@dataclass
+class Stream():
+    data: str
+    def __init__(self, data: str):
+        self.data = data
+    #
+    def take(self, i: int):
+        msg = self.data[0:i]
+        self.data = self.data[i:]
+        return msg
+    #
+    def __len__(self):
+        return len(self.data)
 
-def parse(data):
-    version = int(data[0:3], 2)
-    type_id = int(data[3:6], 2)
-    data = data[6:]
+
+def parse(stream: Stream):
+    version = int(stream.take(3), 2)
+    type_id = int(stream.take(3), 2)
     # parse literal
     if type_id == 4:
         value = ""
         go = True
         while go:
-            bit = data[:5]
-            data = data[5:]
+            bit = stream.take(5)
             go = bit[0] == "1"
             value += bit[1:]
-        return Package(version, type_id, None, int(value, 2), []), data
+        return Package(version, type_id, None, int(value, 2), [])
     else:
-        id = data[0]
-        data = data[1:]
+        id = stream.take(1)
         # parse by size
         if id == "0":
-            size = int(data[0:15], 2)
-            data = data[15:]
-            subdata = data[0:size]
-            data = data[size:]
+            size = int(stream.take(15), 2)
+            substream = Stream(stream.take(size))
             content = []
             while size > 0:
-                el, subdata = parse(subdata)
-                size = len(subdata)
+                el = parse(substream)
+                size = len(substream)
                 content.append(el)
-            return Package(version, type_id, id, None, content), data
+            return Package(version, type_id, id, None, content)
         else:
             # Parse several times
-            n = int(data[0:11], 2)
-            data = data[11:]
+            n = int(stream.take(11), 2)
             content = []
-            for i in range(n):
-                el, data = parse(data)
-                content.append(el)
-            return Package(version, type_id, id, None, content), data
+            for _ in range(n):
+                content.append(parse(stream))
+            return Package(version, type_id, id, None, content)
 
 
 def calc_value(pkg: Package) -> int:
@@ -80,7 +86,7 @@ def calc_value(pkg: Package) -> int:
         return 1 if calc_value(pkg.children[0]) == calc_value(pkg.children[1]) else 0
 
 
-content, buffer = parse(data)
+content = parse(Stream(data))
 
 #################################################
 # Process
