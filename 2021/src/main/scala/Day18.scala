@@ -1,7 +1,7 @@
 import scala.io.Source
 import cats._
 import cats.implicits._
-import cats.data.Reader
+import cats.data.State
 import scala.annotation.tailrec
 
 @main def Day18 = {
@@ -29,26 +29,25 @@ import scala.annotation.tailrec
 
   object Tree {
     // Building blocks
-    type Stack = List[Tree]
-    def id = Reader[Stack, Stack] { stack => stack }
-    def leaf(number: Int) = Reader[Stack, Stack] { stack => Leaf(number) :: stack }
-    def openBranch = Reader[Stack, Stack] { stack => Branch() :: stack }
-    def append = Reader[Stack, Stack] { stack =>
-      stack match
-        case head :: Branch(Empty(), _) :: tail => Branch(head) :: tail
-        case head :: Branch(l, Empty()) :: tail => Branch(l, head) :: tail
-        case head :: Nil                        => List(head)
-        case _                                  => Nil
+    def drop = State[String, Unit] { source => (source.drop(1), ()) }
+    def parseLeaf = State[String, Tree] { _.toList match
+        case head :: tail => (tail.mkString, Leaf(head.asDigit))
+        case _            => ("", Empty())
     }
-    // Evaluation / application of building blocks
-    def eval(syntax: Char) =
-      syntax match
-        case '[' => openBranch
-        case ']' => append
-        case ',' => id
-        case _   => leaf(syntax.asDigit) andThen append
+    def parseTree: State[String, Tree] = 
+      for {
+        head    <- State.inspect[String, Char](_.head)
+        tree    <- if(head == '[') parseBranch else parseLeaf
+      } yield tree
+    def parseBranch: State[String, Branch] =
+      for {
+        left  <- drop *> parseTree
+        right <- drop *> parseTree
+        _     <- drop
+      } yield Branch(left, right)
+
     // Composition of building blocks
-    def apply(line: String): Tree = line.toList.map(eval).reduce(_ andThen _).run(List.empty)(0)
+    def apply(line: String) = parseTree.runA(line).value
   }
   val numbers = input.map(Tree.apply)
 
@@ -67,15 +66,15 @@ import scala.annotation.tailrec
 
       def _explode(number: Tree, level: Int = 0): Option[(Int, Tree, Int)] =
         number match
-          case Leaf(v)                                  => None // Assymetric branch ==> do nothing
-          case Branch(Leaf(l), Leaf(r)) if (level >= 4) => Some(l, Leaf(0), r) // Local end
-          case Branch(l, r) => // Go deeper
+          case Leaf(v)                                  => None
+          case Branch(Leaf(l), Leaf(r)) if (level >= 4) => Some(l, Leaf(0), r)
+          case Branch(l, r) =>
             _explode(l, level + 1).map { (dl, v, dr) =>
               (dl, Branch(v, accumulate(dr, r, 0)), 0)
             } orElse _explode(r, level + 1).map { (dl, v, dr) =>
               (0, Branch(accumulate(0, l, dl), v), dr)
             }
-          case _ => None // Probably not occurring
+          case _ => None
 
       _explode(number).map(_._2).toLeft(number)
     end explode
@@ -86,9 +85,7 @@ import scala.annotation.tailrec
           case Leaf(r) if (r >= 10) =>
             Some(Branch(Leaf(r / 2), Leaf(r - r / 2)))
           case Branch(l, r) =>
-            _split(l)
-              .map(v => Branch(v, r))
-              .orElse { _split(r).map(v => Branch(l, v)) }
+            _split(l).map(v => Branch(v, r)).orElse { _split(r).map(v => Branch(l, v)) }
           case _ => None
 
       _split(number).toLeft(number)
@@ -105,9 +102,6 @@ import scala.annotation.tailrec
     * Output
     * **********************************************
     */
-  def show(result: Int) =
-    println(s"Max pairwise sum: $result")
-
-  show(result)
+  println(s"Max pairwise sum: $result")
 
 }
