@@ -37,21 +37,17 @@ import scala.util.chaining._
         // Retrieve header info
         version <- take(3).map(toLong)
         typeId  <- take(3).map(toLong)
-
         // Define length of subpackages if applicable
-        id <-
-          if (typeId == 4) take(0).map(_ => -1L)
-          else take(1).map(toLong)
-        n <-
-          if (id == 0) take(15).map(toLong).map(_.toInt)
-          else if (id == 1) take(11).map(toLong).map(_.toInt)
-          else take(0).map(_ => -1)
+        id <-   if (typeId == 4)  take(0).map(_ => -1L)
+                else              take(1).map(toLong)
+        n <-    if (id == 0)      take(15).map(toLong).map(_.toInt)
+                else if (id == 1) take(11).map(toLong).map(_.toInt)
+                else              take(0).map(_ => -1)
         // Get content
-        len <- peekSize
-        pkg <-
-          if (id == 0) parseSize(len - n).map(d => Operator(version, typeId, d))
-          else if (id == 1) parseN(n).map(d => Operator(version, typeId, d))
-          else parseData.map(b => Operand(version, typeId, toLong(b)))
+        len <-  peekSize
+        pkg <-  if (id == 0)      parseSize(len - n).map(d => Operator(version, typeId, d))
+                else if (id == 1) parseN(n).map(d => Operator(version, typeId, d))
+                else              parseData.map(b => Operand(version, typeId, toLong(b)))
       } yield pkg
 
     // Parse literal in binary format
@@ -70,9 +66,7 @@ import scala.util.chaining._
     def parseSize(n: Int): Parser[List[Content]] = for {
       head <- parse
       len  <- peekSize
-      tail <-
-        if (len > n) parseSize(n)
-        else take(0).map(_ => Nil)
+      tail <- if (len > n) parseSize(n) else take(0).map(_ => Nil)
     } yield (head :: tail)
   }
 
