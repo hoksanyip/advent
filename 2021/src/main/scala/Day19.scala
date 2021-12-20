@@ -12,10 +12,8 @@ import scala.annotation.tailrec
     * Prepare
     * **********************************************
     */
-  case class Coord(c: (Int, Int, Int)) {
-    def x = c._1; def y = c._2; def z = c._3;   def l = List(x, y, z)
-    def `-` = diff
-    override def toString = s"Coord($x, $y, $z)"
+  case class Coord(x: Int, y: Int, z: Int) {
+    def l = List(x, y, z)
     // Rotation object can have 1,2,3,-1,-2,-3 referring
     // to the relative axis (x=1,y=2,z=3) combined with
     // the mirroring component (sign of value)
@@ -27,10 +25,10 @@ import scala.annotation.tailrec
       (l zip a.l).map(_ - _).map(d => math.pow(d.abs, level).toInt).sum
   }
   object Coord {
-    def apply(x: Int, y: Int, z: Int): Coord = new Coord((x, y, z))
     def apply(line: String) = line match { case s"$x,$y,$z" =>
       new Coord(x.toInt, y.toInt, z.toInt)
     }
+    def apply(x: Int, y: Int, z: Int) = new Coord(x, y, z)
   }
   def zipMap[A, B](a: List[A])(f: (A, A) => B): List[B] =
     a match
@@ -42,6 +40,7 @@ import scala.annotation.tailrec
     * **********************************************
     */
   object Scanner {
+    type Scanner = List[Coord]
 
     val rotations: List[Coord] = for {
         x <- List(1, -1)
@@ -50,18 +49,30 @@ import scala.annotation.tailrec
         Seq(x2, y2, z2) <- (1 to 3).permutations.toList
     } yield Coord(x2 * x, y2 * y, z2 * z)
 
-    def similarity(scannerA: List[Coord], scannerB: List[Coord]): Int =
-      def _pairDist(scanner: List[Coord]): Set[Int] =
+    def similarity(scannerA: Scanner, scannerB: Scanner): Int =
+      def _pairDist(scanner: Scanner): Set[Int] =
         zipMap(scanner) { (a, b) => (a dist b) }.toSet
       (_pairDist(scannerA) & _pairDist(scannerB)).size
 
-    def align(scannerA: List[Coord], scannerB: List[Coord]): (Coord, Coord) = {
+    def align(scannerA: Scanner, scannerB: Scanner): (Coord, Coord) = {
       val diffs = for {
         a <- scannerA
         b <- scannerB
         r <- rotations
-      } yield (r, a - b.rotate(r))
+      } yield (r, a diff b.rotate(r))
       diffs.map(d => Map( d -> 1)).reduce(_ |+| _).toList.sortBy(-_._2).head._1
+    }
+
+    def navigate(id: Int, links: Map[Int, List[Int]], data: List[Scanner]): Map[Int, (Coord, Coord)] = {
+      if(!links.keys.toSet.contains(id)) Map.empty
+      else
+        links(id).map { i =>
+          val (rotation, shift) = align(data(id), data(i))
+          val children = navigate(i, links, data).map { case (i, (r, s)) => 
+            i -> (r.rotate(rotation), s.rotate(rotation).move(shift))
+          }
+          Map(i -> (rotation, shift)) ++ children
+        }.reduce(_ ++ _)
     }
   }
 
@@ -88,18 +99,6 @@ import scala.annotation.tailrec
         getDependency(simMat)(todo -- links.keys, links ++ acc)
   }
 
-  def mergeInto(id: Int, links: Map[Int, List[Int]], data: List[List[Coord]]): Map[Int, (Coord, Coord)] = {
-    if(!links.keys.toSet.contains(id)) Map.empty
-    else
-      links(id).map { i =>
-        val (rotation, shift) = Scanner.align(data(id), data(i))
-        val children = mergeInto(i, links, data).map { case (i, (r, s)) => 
-          i -> (r.rotate(rotation), s.rotate(rotation).move(shift))
-        }
-        Map(i -> (rotation, shift)) ++ children
-      }.reduce(_ ++ _)
-  }
-
   // Calculate overlaps between scanners
   val matchings = zipMap(data.zipWithIndex) { case ((a, iA), (b, iB)) =>
     (iA, iB) -> Scanner.similarity(a, b)
@@ -111,7 +110,7 @@ import scala.annotation.tailrec
   val links = getDependency(fullMatch)(todo, Map(0 -> 0)).toList.drop(1).groupMap(_._2)(_._1)
   
   // Find the projection based on scanner 0
-  val mapper = mergeInto(0, links, data) ++ Map(0 -> (Coord(1,2,3), Coord(0,0,0)))
+  val mapper = Scanner.navigate(0, links, data) ++ Map(0 -> (Coord(1,2,3), Coord(0,0,0)))
 
   // Find all locations
   val beacons = (0 to data.size - 1).flatMap { i =>

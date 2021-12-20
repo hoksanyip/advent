@@ -22,10 +22,12 @@ import scala.annotation.tailrec
     def enhance(m: List[Row])(lookup: Row, count: Int = 1, acc: Int = 0): List[Row] = {
       if (acc == count) m
       else
-        val f = if (acc % 2 == 0) 0 else lookup(0)
-        val newImg = 
-          (List.fill(2)(List.fill(m.size)(f)) ++ m ++ List.fill(2)(List.fill(m.size)(f)))
-          .map(r => List.fill(2)(f) ++ r ++ List.fill(2)(f))
+        val border = if (acc % 2 == 0) 0 else lookup(0)
+        val newRow = List.fill(m.size)(border)
+        def twiceOf[A](a: A) = List.fill(2)(a: A)
+        val newImg =
+          (twiceOf(newRow) ++ m ++ twiceOf(newRow))
+            .map(r => twiceOf(border) ++ r ++ twiceOf(border))
 
         val expanded =
           (1 to m.size + 2).map { i =>
@@ -38,7 +40,7 @@ import scala.annotation.tailrec
     }
   }
   implicit class showMap(m: List[Row]) {
-    def show: Unit = m.map { r => r.map( List('.', '#')(_)).mkString    }.foreach(println)
+    def show: Unit = m.map { r => r.map( List('.', '#')(_)).mkString }.foreach(println)
     def enhance(lookup: Row, count: Int = 1) = Matrix.enhance(m)(lookup, count)
   }
 
