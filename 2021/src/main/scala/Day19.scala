@@ -14,7 +14,6 @@ import scala.annotation.tailrec
     */
   case class Coord(c: (Int, Int, Int)) {
     def x = c._1; def y = c._2; def z = c._3;   def l = List(x, y, z)
-    def `+` = move
     def `-` = diff
     override def toString = s"Coord($x, $y, $z)"
     // Rotation object can have 1,2,3,-1,-2,-3 referring
