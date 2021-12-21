@@ -9,7 +9,10 @@ import scala.annotation.tailrec
     * **********************************************
     */
   val input = Source.fromFile("2021/src/main/resources/day20.txt").getLines.toList
-  val (lookup, img) = input.map(_.toList.map( List('.','#').indexOf)).pipe(i => i.head -> i.tail.tail)
+  def parse(line: String): IndexedSeq[Int] = line.map( Seq('.', '#').indexOf )
+  val lookup = parse(input.head)
+  val img = input.tail.tail.map(parse)
+
 
   /** **********************************************
     * Prepare

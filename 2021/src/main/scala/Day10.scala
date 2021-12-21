@@ -29,7 +29,7 @@ object Day10 extends IOApp.Simple {
       }
     }
     def evalOne(symbol: Char) =
-      symbol match {
+      symbol match
         case '(' => open(Chunk.Parenthese)
         case ')' => close(Chunk.Parenthese)
         case '[' => open(Chunk.Bracket)
@@ -38,7 +38,7 @@ object Day10 extends IOApp.Simple {
         case '}' => close(Chunk.Brace)
         case '<' => open(Chunk.Chevron)
         case '>' => close(Chunk.Chevron)
-      }
+
     def eval(input: String): Check[Inception] =
       input.toList.map(evalOne).reduce(_ andThen _).run(List.empty)
   }

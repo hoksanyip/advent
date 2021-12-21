@@ -4,20 +4,22 @@ import scala.util.chaining._
 import breeze.linalg._
 import breeze.numerics._
 
-
 @main def Day21 = {
 
   /** **********************************************
     * Import data
     * **********************************************
     */
-  val data = Source.fromFile("2021/src/main/resources/day21.txt").getLines.toList.map(_.last.asDigit)
+  val input = Source.fromFile("2021/src/main/resources/day21.txt").getLines.toList
+  val data = input.map(_.last.asDigit)
 
   // Define dice roll transition matrix
-  def createRollMat(n: Int): DenseMatrix[Long] = 
-    DenseMatrix.tabulate[Long](n, n) {  (i, j) =>
-      if ( (10 + j - i + 3) % 10 < 3 ) 1 else 0
-    }.pipe(r => r * r * r)
+  def createRollMat(n: Int): DenseMatrix[Long] =
+    DenseMatrix
+      .tabulate[Long](n, n) { (i, j) =>
+        if ((10 + j - i + 3) % 10 < 3) 1 else 0
+      }
+      .pipe(r => r * r * r)
 
   // Apply moves of pawn base on dice roll
   def movePawn(p: DenseMatrix[Long]): (DenseMatrix[Long], Long) = {
@@ -31,7 +33,9 @@ import breeze.numerics._
 
   // Play game until end of all possibilities
   @tailrec
-  def play(rollMat: DenseMatrix[Long])(pos: Map[Int, DenseMatrix[Long]], turn: Int, winning: Seq[Long]): Seq[Long] =
+  def play(
+    rollMat: DenseMatrix[Long]
+  )(pos: Map[Int, DenseMatrix[Long]], turn: Int, winning: Seq[Long]): Seq[Long] =
     if sum(pos(0)) == 0 || sum(pos(1)) == 0 then winning
     else
       val (posTurn, newWins) = movePawn(rollMat * pos(turn))
@@ -47,8 +51,12 @@ import breeze.numerics._
 
   // Starting points
   val pos = Map(
-    0 -> DenseMatrix.tabulate[Long](n, m + 1) { (i, j) => if ( j == 0 && i == data(0) - 1 ) 1 else 0},
-    1 -> DenseMatrix.tabulate[Long](n, m + 1) { (i, j) => if ( j == 0 && i == data(1) - 1 ) 1 else 0}
+    0 -> DenseMatrix.tabulate[Long](n, m + 1) { (i, j) =>
+      if (j == 0 && i == data(0) - 1) 1 else 0
+    },
+    1 -> DenseMatrix.tabulate[Long](n, m + 1) { (i, j) =>
+      if (j == 0 && i == data(1) - 1) 1 else 0
+    }
   )
   val rollMat = createRollMat(n)
 
