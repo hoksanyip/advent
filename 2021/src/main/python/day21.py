@@ -30,7 +30,10 @@ def move_pawn(pos: np.array) -> np.array:
     return pos
 
 # Prepare starting positions
-pos = {0: np.zeros((n, n_end + 1), dtype=np.ulonglong), 1: np.zeros((n, n_end + 1), dtype=np.ulonglong)}
+pos = {
+    0: np.zeros((n, n_end + 1), dtype=np.ulonglong),
+    1: np.zeros((n, n_end + 1), dtype=np.ulonglong)
+}
 pos[0][data[0] - 1, 0] = 1
 pos[1][data[1] - 1, 0] = 1
 
