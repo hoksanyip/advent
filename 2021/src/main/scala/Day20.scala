@@ -9,10 +9,9 @@ import scala.annotation.tailrec
     * **********************************************
     */
   val input = Source.fromFile("2021/src/main/resources/day20.txt").getLines.toList
-  def parse(line: String): IndexedSeq[Int] = line.map( Seq('.', '#').indexOf )
+  def parse(line: String): List[Int] = line.map(Seq('.', '#').indexOf).toList
   val lookup = parse(input.head)
   val img = input.tail.tail.map(parse)
-
 
   /** **********************************************
     * Prepare
@@ -43,7 +42,7 @@ import scala.annotation.tailrec
     }
   }
   implicit class showMap(m: List[Row]) {
-    def show: Unit = m.map { r => r.map( List('.', '#')(_)).mkString }.foreach(println)
+    def show: Unit = m.map { r => r.map(List('.', '#')(_)).mkString }.foreach(println)
     def enhance(lookup: Row, count: Int = 1) = Matrix.enhance(m)(lookup, count)
   }
 

@@ -63,10 +63,10 @@ import scala.util.chaining._
   val result =
     (1 to 2 * -area.ymin) // For range of t
       .map { t =>
-        for { // find boundaries of speed which can be reached at t
+        for // find boundaries of speed which can be reached at t
           x <- findDx(t, area.xmin, area.xmax)
           y <- findDy(t, area.ymin, area.ymax)
-        } yield (x, y)
+        yield (x, y)
       }
       .flatten
       .toSet

@@ -39,12 +39,12 @@ import scala.util.chaining._
         typeId  <- take(3).map(toLong)
         // Define length of subpackages if applicable
         id <-
-          if (typeId == 4) take(0).map(_ => -1L)
+          if (typeId == 4) -1.pure[Parser]
           else take(1).map(toLong)
         n <-
           if (id == 0) take(15).map(toLong).map(_.toInt)
           else if (id == 1) take(11).map(toLong).map(_.toInt)
-          else take(0).map(_ => -1)
+          else -1.pure[Parser]
         // Get content
         len <- peekSize
         pkg <-
@@ -56,20 +56,20 @@ import scala.util.chaining._
     // Parse literal in binary format
     def parseData: Parser[String] = for {
       head <- take(5)
-      tail <- if (head.head == '1') parseData else take(0).map(_ => "")
+      tail <- if (head.head == '1') parseData else "".pure[Parser]
     } yield (head.tail + tail)
 
     // Parse specific count of subpackages
     def parseN(n: Int): Parser[List[Content]] = for {
       head <- parse
-      tail <- if (n > 1) parseN(n - 1) else take(0).map(_ => Nil)
+      tail <- if (n > 1) parseN(n - 1) else Nil.pure[Parser]
     } yield (head :: tail)
 
     // Parse specific length of bits
     def parseSize(n: Int): Parser[List[Content]] = for {
       head <- parse
       len  <- peekSize
-      tail <- if (len > n) parseSize(n) else take(0).map(_ => Nil)
+      tail <- if (len > n) parseSize(n) else Nil.pure[Parser]
     } yield (head :: tail)
   }
 
