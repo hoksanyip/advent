@@ -6,7 +6,7 @@ import scala.io.Source
     * Import data
     * **********************************************
     */
-  val input: List[String] = Source.fromFile("2021/src/main/resources/day12.txt").getLines.toList
+  val input: List[String] = Source.fromFile("2021/data/day12.txt").getLines.toList
 
   /** **********************************************
     * Prepare

@@ -10,7 +10,7 @@ import breeze.numerics._
     * Import data
     * **********************************************
     */
-  val input = Source.fromFile("2021/src/main/resources/day21.txt").getLines.toList
+  val input = Source.fromFile("2021/data/day21.txt").getLines.toList
   val data = input.map(_.last.asDigit)
 
   // Define dice roll transition matrix

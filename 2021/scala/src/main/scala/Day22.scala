@@ -59,7 +59,7 @@ import scala.annotation.tailrec
     * Process
     * **********************************************
     */
-  val input = Source.fromFile("2021/src/main/resources/day22.txt").getLines.toList
+  val input = Source.fromFile("2021/data/day22.txt").getLines.toList
   val procedure = input.map { case s"$proc x=$xmin..$xmax,y=$ymin..$ymax,z=$zmin..$zmax" =>
     val x = Range(xmin.toLong, xmax.toLong + 1)
     val y = Range(ymin.toLong, ymax.toLong + 1)

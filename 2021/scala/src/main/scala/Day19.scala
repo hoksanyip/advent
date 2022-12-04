@@ -84,7 +84,7 @@ import scala.annotation.tailrec
     * Import data
     * **********************************************
     */
-  val input = Source.fromFile("2021/src/main/resources/day19.txt").getLines.toList
+  val input = Source.fromFile("2021/data/day19.txt").getLines.toList
   val data = input
     .mkString("\n")
     .split("\n\n")

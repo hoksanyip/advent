@@ -9,7 +9,7 @@ import scala.annotation.tailrec
     * Import data
     * **********************************************
     */
-  val input = Source.fromFile("2021/src/main/resources/day14.txt").getLines.toList
+  val input = Source.fromFile("2021/data/day14.txt").getLines.toList
   val template = input.head.toList.toSeq
   val rules = input.tail.tail.map { case s"$l -> $r" => (l(0), l(1)) -> r(0) }.toMap
 

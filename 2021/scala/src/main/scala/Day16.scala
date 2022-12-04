@@ -11,7 +11,7 @@ import scala.util.chaining._
     * Import data
     * **********************************************
     */
-  val input = Source.fromFile("2021/src/main/resources/day16.txt").getLines.toList.head
+  val input = Source.fromFile("2021/data/day16.txt").getLines.toList.head
   val binaries = input.toList
     .flatMap(c => "%04d".format(c.toString.pipe(Integer.parseInt(_, 16)).toBinaryString.toInt))
     .mkString

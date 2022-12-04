@@ -6,7 +6,7 @@ lazy val dependencies = Seq(
   "org.typelevel" %% "cats-effect" % "3.2.9",
   "co.fs2"        %% "fs2-core"    % "3.2.2",
   "co.fs2"        %% "fs2-io"      % "3.2.2",
-  "org.scalanlp"  %% "breeze"      % "2.0" exclude("org.typelevel", "spire_2.13")
+  "org.scalanlp"  %% "breeze"      % "2.0" exclude ("org.typelevel", "spire_2.13")
 )
 
 lazy val jsonDeps = Seq(
@@ -20,12 +20,12 @@ lazy val jsonDeps = Seq(
 lazy val core = (project in file("."))
   .settings(libraryDependencies ++= dependencies ++ jsonDeps)
 
-lazy val y2020 = (project in file("2020"))
+lazy val y2020 = (project in file("2020/scala"))
   .dependsOn(core)
   .aggregate(core)
   .settings(libraryDependencies ++= dependencies)
 
-lazy val y2021 = (project in file("2021"))
+lazy val y2021 = (project in file("2021/scala"))
   .dependsOn(core)
   .aggregate(core)
   .settings(libraryDependencies ++= dependencies)

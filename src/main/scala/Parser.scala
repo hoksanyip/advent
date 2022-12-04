@@ -7,7 +7,7 @@ import scala.util.Try
 
 object Parser {
   val cwd = System.getProperty("user.dir")
-  val dataFolder = "src/main/resources"
+  val dataFolder = "data"
 
   /** Read content from resource file.
     *

@@ -10,7 +10,7 @@ import scala.annotation.tailrec
     * Import data
     * **********************************************
     */
-  val input = Source.fromFile("2021/src/main/resources/day18.txt").getLines.toList
+  val input = Source.fromFile("2021/data/day18.txt").getLines.toList
 
   /** **********************************************
     * Prepare

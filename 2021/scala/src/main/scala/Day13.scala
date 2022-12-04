@@ -7,7 +7,7 @@ import scala.util.chaining._
     * Import data
     * **********************************************
     */
-  val input = Source.fromFile("2021/src/main/resources/day13.txt").getLines.toList
+  val input = Source.fromFile("2021/data/day13.txt").getLines.toList
 
   /** **********************************************
     * Prepare

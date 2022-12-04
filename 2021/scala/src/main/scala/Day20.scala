@@ -8,7 +8,7 @@ import scala.annotation.tailrec
     * Import data
     * **********************************************
     */
-  val input = Source.fromFile("2021/src/main/resources/day20.txt").getLines.toList
+  val input = Source.fromFile("2021/data/day20.txt").getLines.toList
   def parse(line: String): List[Int] = line.map(Seq('.', '#').indexOf).toList
   val lookup = parse(input.head)
   val img = input.tail.tail.map(parse)

@@ -11,7 +11,7 @@ import scala.io.Source
     * Import data
     * **********************************************
     */
-  val input = Source.fromFile("2021/src/main/resources/day__.txt").getLines.toList
+  val input = Source.fromFile("2021/data/day__.txt").getLines.toList
 
   /** **********************************************
     * Process

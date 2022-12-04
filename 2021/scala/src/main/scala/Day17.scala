@@ -8,7 +8,7 @@ import scala.util.chaining._
     * Import data
     * **********************************************
     */
-  val input = Source.fromFile("2021/src/main/resources/day17.txt").getLines.toList.head
+  val input = Source.fromFile("2021/data/day17.txt").getLines.toList.head
   case class Area(xmin: Int, xmax: Int, ymin: Int, ymax: Int)
   val area = input.pipe { case s"target area: x=$xmin..$xmax, y=$ymin..$ymax" =>
     Area(xmin.toInt, xmax.toInt, ymin.toInt, ymax.toInt)
