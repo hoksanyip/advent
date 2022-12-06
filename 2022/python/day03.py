@@ -3,13 +3,14 @@ from typing import List
 import itertools
 import functools
 
+PRIORITIES = string.ascii_letters
+
+
 #################################################
 # Import
 #################################################
 with open("2022/src/main/resources/day03.txt", "r") as f:
     data = [row.strip() for row in f.readlines()]
-
-PRIORITIES = string.ascii_letters
 
 
 #################################################
@@ -26,13 +27,9 @@ def find_common(x: set, y: set) -> set:
 #################################################
 # Process
 #################################################
-def split_in_half(array: str) -> List[str]:
-    half = len(array)//2
-    return array[0:half], array[half:]
-
-
 def process_sack(array: str):
-    comps = split_in_half(array)
+    half = len(array) // 2
+    comps = [array[0:half], array[half:]]
     prios = [convert_to_prio(comp) for comp in comps]
     result = functools.reduce(find_common, prios)
     return result.pop()

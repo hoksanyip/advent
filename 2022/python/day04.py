@@ -1,5 +1,4 @@
 from typing import Tuple
-import numpy as np
 
 #################################################
 # Import
@@ -25,17 +24,16 @@ data_pairs = [get_sets(line) for line in data]
 #################################################
 # Process
 #################################################
-def is_subset(a: Range, b: Range) -> bool:
-    return np.sign(a[0] - b[0]) * np.sign(b[1] - a[1]) >= 0
+def is_subset(set1: Tuple[int, int], set2: Tuple[int, int]) -> bool:
+    return (set1[0] - set2[0]) * (set2[1] - set1[1]) >= 0
 
 
-def has_overlap(a: Range, b: Range) -> bool:
-    return np.sign(a[1] - b[0]) * np.sign(b[1] - a[0]) >= 0
+def has_overlap(set1: Tuple[int, int], set2: Tuple[int, int]) -> bool:
+    return (set1[1] - set2[0]) * (set2[1] - set1[0]) >= 0
 
 
 #################################################
 # Output
 #################################################
 print(f"Answer 1: {sum([is_subset(*line) for line in data_pairs])}")
-
 print(f"Answer 2: {sum([has_overlap(*line) for line in data_pairs])}")
