@@ -3,7 +3,7 @@ from typing import Tuple
 #################################################
 # Import
 #################################################
-with open("2022/src/main/resources/day04.txt", "r") as f:
+with open("2022/data/day04.txt", "r") as f:
     data = [row.strip() for row in f.readlines()]
 
 #################################################

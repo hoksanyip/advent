@@ -3,7 +3,7 @@ from collections import Counter
 #################################################
 # Import
 #################################################
-with open("2021/src/main/resources/day14.txt", "r") as f:
+with open("2021/data/day14.txt", "r") as f:
     polymer = list(f.readline().strip())
     template = Counter(a + b for a, b in zip(polymer[:-1], polymer[1:]))
     _ = f.readline()

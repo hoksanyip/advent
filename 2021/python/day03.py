@@ -4,13 +4,15 @@ from typing import Callable
 #################################################
 # Import
 #################################################
-with open("2021/src/main/resources/day03.txt", "r") as f:
+with open("2021/data/day03.txt", "r") as f:
     data = np.array([int("0b" + row, 2) for row in f.readlines()])
 
 #################################################
 # Prepare
 #################################################
 k = int(np.ceil(np.log2(max(data))))
+
+
 def find_common(data: np.array, k: int, f: Callable) -> int:
     data_iter = data.copy()
     acc = 0
@@ -22,6 +24,7 @@ def find_common(data: np.array, k: int, f: Callable) -> int:
         selection = validation * which + (1 - validation) * (1 - which)
         data_iter = data_iter[selection.astype(bool)] - which * value
     return acc
+
 
 #################################################
 # Process

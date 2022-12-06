@@ -4,13 +4,15 @@ from functools import reduce
 #################################################
 # Import
 #################################################
-with open("2021/src/main/resources/day16.txt", "r") as f:
+with open("2021/data/day16.txt", "r") as f:
     data = f.readline().strip()
     data = "".join(["{:0>4b}".format(int(h, 16)) for h in list(data)])
 
 #################################################
 # Prepare
 #################################################
+
+
 @dataclass
 class Package():
     version: int
@@ -19,9 +21,11 @@ class Package():
     value: int
     children: list
 
+
 @dataclass
 class Stream():
     data: str
+
     def __init__(self, data: str):
         self.data = data
 
@@ -29,7 +33,7 @@ class Stream():
         msg = self.data[0:i]
         self.data = self.data[i:]
         return msg
-    
+
     def peek(self, i: int):
         if len(self.data) < i:
             return self.data
@@ -85,6 +89,7 @@ def calc_value(pkg: Package) -> int:
         return pkg.value
     else:
         return reduce(fun[pkg.type_id], [calc_value(kid) for kid in pkg.children])
+
 
 #################################################
 # Process

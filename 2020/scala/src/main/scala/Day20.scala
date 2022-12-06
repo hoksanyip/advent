@@ -9,7 +9,7 @@ import scala.util.chaining._
     * Import data
     * **********************************************
     */
-  val input = Source.fromFile("2020/src/main/resources/day20.txt").getLines.toList
+  val input = Source.fromFile("2020/data/day20.txt").getLines.toList
   val data = input.mkString("\n").split("\n\n").map(_.split("\n"))
   val tiles = data.map { table =>
     val id = table.head.pipe { case s"Tile $s:" => s.toInt }

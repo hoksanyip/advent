@@ -18,7 +18,7 @@ def process_deer(source: Iterable[str]) -> Iterable[int]:
     yield deer
 
 
-with open("2022/src/main/resources/day01.txt", "r") as f:
+with open("2022/data/day01.txt", "r") as f:
     source = process_deer(f)
     data = list(source)
 

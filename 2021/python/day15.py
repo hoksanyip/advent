@@ -5,14 +5,18 @@ from typing import Set, Tuple
 #################################################
 # Import
 #################################################
-with open("2021/src/main/resources/day15.txt", "r") as f:
+with open("2021/data/day15.txt", "r") as f:
     data = [row.strip() for row in f.readlines()]
     data = np.array([list(row) for row in data], dtype=int)
 
 #################################################
 # Prepare
 #################################################
-increase = lambda i: np.vectorize(lambda x: (x - 1 + i) % 9 + 1)
+
+
+def increase(i): return np.vectorize(lambda x: (x - 1 + i) % 9 + 1)
+
+
 data = np.concatenate([increase(i)(data) for i in range(5)])
 data = np.concatenate([increase(i)(data) for i in range(5)], axis=1)
 n = len(data)
@@ -20,6 +24,8 @@ n = len(data)
 #################################################
 # Process
 #################################################
+
+
 def neighbour(p: Tuple[int, int]) -> Set[Tuple[int, int]]:
     x, y = p
     return {
@@ -27,6 +33,7 @@ def neighbour(p: Tuple[int, int]) -> Set[Tuple[int, int]]:
         for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]
         if 0 <= x + dx < n and 0 <= y + dy < n
     }
+
 
 def shortest_path(data: np.array) -> np.array:
     path = np.zeros(data.shape, dtype=int)
@@ -44,6 +51,7 @@ def shortest_path(data: np.array) -> np.array:
                 path[new_node] = data[new_node] + dt
 
     return path
+
 
 path = shortest_path(data)
 

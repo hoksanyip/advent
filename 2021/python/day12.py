@@ -4,7 +4,7 @@ from collections import Counter
 #################################################
 # Import
 #################################################
-with open("2021/src/main/resources/day12.txt", "r") as f:
+with open("2021/data/day12.txt", "r") as f:
     data = [row.strip() for row in f.readlines()]
     data = [row.split("-") for row in data]
 
@@ -21,6 +21,8 @@ for node in data:
 #################################################
 # Process
 #################################################
+
+
 def disallow_caves(route: List[str]) -> bool:
     frequencies = Counter([cave for cave in route if cave.islower()])
     if frequencies.most_common()[0][1] > 1:
@@ -29,6 +31,7 @@ def disallow_caves(route: List[str]) -> bool:
     else:
         # Allow an extra visit for 1 small cave
         return set()
+
 
 def find_route(route: List[str], graph: Dict[str, Set[str]]) -> int:
     last_cave = route[-1]
@@ -46,6 +49,7 @@ def find_route(route: List[str], graph: Dict[str, Set[str]]) -> int:
         num_routes += find_route(new_route, graph)
 
     return num_routes
+
 
 route_count = find_route(["start"], graph)
 

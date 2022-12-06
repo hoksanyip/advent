@@ -4,7 +4,7 @@ import numpy as np
 #################################################
 # Import
 #################################################
-data = pd.read_table("2021/src/main/resources/day02.txt", sep=" ", header=None)
+data = pd.read_table("2021/data/day02.txt", sep=" ", header=None)
 data.columns = ["action", "amount"]
 
 #################################################

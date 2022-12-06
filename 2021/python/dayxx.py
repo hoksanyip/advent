@@ -1,7 +1,7 @@
 #################################################
 # Import
 #################################################
-with open("2021/src/main/resources/dayxx.txt", "r") as f:
+with open("2021/data/dayxx.txt", "r") as f:
     data = [row.strip() for row in f.readlines()]
 
 #################################################

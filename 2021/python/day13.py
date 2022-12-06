@@ -4,7 +4,7 @@ from scipy import sparse
 #################################################
 # Import
 #################################################
-with open("2021/src/main/resources/day13.txt", "r") as f:
+with open("2021/data/day13.txt", "r") as f:
     x, y, fold = [], [], []
     for row in f.readlines():
         if "," in row:

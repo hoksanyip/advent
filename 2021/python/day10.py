@@ -4,15 +4,16 @@ import numpy as np
 #################################################
 # Import
 #################################################
-with open("2021/src/main/resources/day10.txt", "r") as f:
+with open("2021/data/day10.txt", "r") as f:
     data = [row.strip() for row in f.readlines()]
 
 #################################################
 # Process
 #################################################
 SCORE = {")": -3, "]": -57, "}": -1197, ">": -25137,
-        "(": 1, "[": 2, "{": 3, "<": 4}
+         "(": 1, "[": 2, "{": 3, "<": 4}
 MAPPING = {")": "(", "]": "[", "}": "{", ">": "<"}
+
 
 def process_syntax(row: str) -> int:
     inception = []
@@ -28,6 +29,7 @@ def process_syntax(row: str) -> int:
     score = reduce(lambda x, y: x * 5 + y, reversed(scores))
 
     return score
+
 
 #################################################
 # Process

@@ -4,7 +4,7 @@ import numpy as np
 #################################################
 # Import
 #################################################
-with open("2021/src/main/resources/day06.txt", "r") as f:
+with open("2021/data/day06.txt", "r") as f:
     data = Counter([int(v) for v in f.readline().split(",")])
 
 #################################################

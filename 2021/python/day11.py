@@ -3,7 +3,7 @@ import numpy as np
 #################################################
 # Import
 #################################################
-with open("2021/src/main/resources/day11.txt", "r") as f:
+with open("2021/data/day11.txt", "r") as f:
     data = np.array([list(row.strip()) for row in f.readlines()], dtype=int)
 
 #################################################
