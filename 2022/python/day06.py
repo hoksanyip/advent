@@ -1,5 +1,4 @@
 from typing import Iterable
-import itertools
 
 #################################################
 # Import
@@ -11,22 +10,20 @@ with open("2022/data/day06.txt", "r") as f:
 #################################################
 # Prepare
 #################################################
-def rolling_generator(source: Iterable[str], size: int) -> Iterable[str]:
-    base = " " + "".join(itertools.islice(source, size - 1))
+def moving_generator(source: Iterable[str], size: int) -> Iterable[str]:
+    base = "".join(next(source) for _ in range(size - 1))
     for char in source:
         base = base[1:] + char
         yield base
 
 
 def find_match(data: str, size: int) -> int:
-    source = iter(data)
-    roll = rolling_generator(source, size)
-    found = False
+    roll = moving_generator(iter(data), size)
+    marker = ""
     pos = size - 1
-    while not found:
+    while not len(set(marker)) == size:
         pos += 1
         marker = next(roll)
-        found = len(set(marker)) == size
     return pos
 
 
