@@ -27,13 +27,29 @@ class Direction(Enum):
 
 
 def is_visible(i, j, data):
-    return max(
+    """
+    If in ANY direction, ALL trees are lower than current tree,
+    then it is visible.
+
+    :param i: row index
+    :param j: column index
+    :param data: numpy 2d array of tree map
+    :return: boolean whether tree is visible from any direction
+    """
+    return np.any([
         np.all(data[i, j] > direction.get(i, j, data))
         for direction in Direction
-    )
+    ])
 
 
 def calc_distance(row):
+    """
+    Distance as defined as number of visible trees until the vision is 'blocked'
+
+    :param row: 1d array of boolean indicating whether tree is blocking the view
+    :return: distance to first blocked tree (or number of trees if it is not blocked)
+    """
+    # On edge, so no trees can be seen there
     if len(row) == 0:
         return 0
     # If nothing is blocked, all are visible
@@ -43,6 +59,14 @@ def calc_distance(row):
 
 
 def calc_scenery(i, j, data):
+    """
+    Take the product of the "distance" for all directions
+
+    :param i: row index
+    :param j: column index
+    :param data: numpy 2d array of tree map
+    :return: scenery value as the product of the distances
+    """
     return np.prod([
         calc_distance(data[i, j] <= direction.get(i, j, data))
         for direction in Direction
