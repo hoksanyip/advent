@@ -11,7 +11,7 @@ with open("2022/data/day06.txt", "r") as f:
 # Prepare
 #################################################
 def moving_generator(source: Iterable[str], size: int) -> Iterable[str]:
-    base = "".join(next(source) for _ in range(size - 1))
+    base = "_" + "".join(next(source) for _ in range(size - 1))
     for char in source:
         base = base[1:] + char
         yield base

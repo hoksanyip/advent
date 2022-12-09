@@ -13,10 +13,7 @@ with open("2022/data/day08.txt", "r") as f:
 # Prepare
 #################################################
 class Direction(Enum):
-    LEFT = 1
-    RIGHT = 2
-    UP = 3
-    DOWN = 4
+    LEFT, RIGHT, UP, DOWN = range(4)
 
     def get(self, i: int, j: int, data: np.array):
         match self:
@@ -36,8 +33,8 @@ def is_visible(i, j, data):
     :param data: numpy 2d array of tree map
     :return: boolean whether tree is visible from any direction
     """
-    return np.any([
-        np.all(data[i, j] > direction.get(i, j, data))
+    return any([
+        (data[i, j] > direction.get(i, j, data)).all()
         for direction in Direction
     ])
 
@@ -74,14 +71,10 @@ def calc_scenery(i, j, data):
 
 
 #################################################
-# Process
-#################################################
-output1 = sum(is_visible(i, j, data) for i, j in np.ndindex(data.shape))
-output2 = max(calc_scenery(i, j, data) for i, j in np.ndindex(data.shape))
-
-
-#################################################
 # Output
 #################################################
+output1 = sum(is_visible(i, j, data) for i, j in np.ndindex(data.shape))
 print(f"Answer 1: {output1}")
+
+output2 = max(calc_scenery(i, j, data) for i, j in np.ndindex(data.shape))
 print(f"Answer 2: {output2}")
