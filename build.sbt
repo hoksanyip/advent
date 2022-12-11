@@ -17,15 +17,8 @@ lazy val jsonDeps = Seq(
   "com.softwaremill.sttp.client3" %% "core"          % "3.3.18"
 )
 
-lazy val core = (project in file("."))
-  .settings(libraryDependencies ++= dependencies ++ jsonDeps)
-
 lazy val y2020 = (project in file("2020/scala"))
-  .dependsOn(core)
-  .aggregate(core)
   .settings(libraryDependencies ++= dependencies)
 
 lazy val y2021 = (project in file("2021/scala"))
-  .dependsOn(core)
-  .aggregate(core)
   .settings(libraryDependencies ++= dependencies)
