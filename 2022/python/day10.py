@@ -1,58 +1,53 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Iterable, List
-from enum import Enum
 import numpy as np
+from typing import Iterable
 
 
 #################################################
 # Prepare
 #################################################
-class Command(Enum):
-    NOOP, ADDX = "noop", "addx"
-
-
 @dataclass
 class Instruction():
-    command: str
+    cycles: int = 0
     amount: int = 0
 
     @staticmethod
     def parse(txt: str) -> Instruction:
         match txt.strip().split(" "):
-            case "noop", : return Instruction(Command.NOOP, 0)
-            case "addx", amount: return Instruction(Command.ADDX, int(amount))
-
-    def execute(self, x: int) -> Iterable[int]:
-        match self.command:
-            case Command.NOOP: return (x,)
-            case Command.ADDX: return (x, x + self.amount)
+            case "noop", : return Instruction(1, 0)
+            case "addx", amount: return Instruction(2, int(amount))
 
 
-def enumerate_instructions(data: List[Instruction]) -> Iterable[int]:
+def execute_instructions(data: Iterable[Instruction]) -> Iterable[int]:
+    # Starting point at 1
     x = 1
     for instruction in data:
-        for x in instruction.execute(x):
+        # Return per instruction the current amount
+        for _ in range(instruction.cycles):
             yield x
+        # Update only at end of cycles
+        x += instruction.amount
 
 
 #################################################
 # Import
 #################################################
 with open("2022/data/day10.txt", "r") as f:
-    data = [Instruction.parse(row) for row in f.readlines()]
+    data = (Instruction.parse(row) for row in f.readlines())
 
 #################################################
 # Process
 #################################################
 NROW, NCOL = 6, 40
 
-output = [1] + [instr for instr in enumerate_instructions(data)][:-1]
+output = [instr for instr in execute_instructions(data)]
 output1 = sum(i * output[i - 1] for i in range(20, 240, 40))
 
-output = np.reshape(output, (NROW, NCOL))
-sprite = np.tile(np.arange(NCOL), (NROW, 1))
-output2 = np.abs(output - sprite) <= 1
+output2 = np.abs(
+    np.reshape(output, (NROW, NCOL)) -
+    np.tile(np.arange(NCOL), (NROW, 1))
+) <= 1
 
 #################################################
 # Output
@@ -60,5 +55,6 @@ output2 = np.abs(output - sprite) <= 1
 print(f"Answer 1: {output1}")
 
 print("Answer 2:")
-with np.printoptions(formatter={"all": lambda x: "\u2588" if x > 0 else " "}, linewidth=1000):
-    print(output2)
+CHARS = [" " * 2, "\u2588" * 2]
+for row in output2:
+    print("".join(CHARS[int(x)] for x in row))
