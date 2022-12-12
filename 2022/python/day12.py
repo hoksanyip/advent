@@ -1,24 +1,19 @@
 from enum import Enum
-import heapq
 import string
 from typing import Dict, Set, Tuple
 
 #################################################
 # Prepare
 #################################################
-ORDER = 'ES' + string.ascii_lowercase
+ORDER = string.ascii_lowercase
 Position = Tuple[int, int]
 
 
 class Direction(Enum):
-    LEFT, RIGHT, UP, DOWN = "LRUD"
+    LEFT, RIGHT, UP, DOWN = (0, -1), (0, 1), (-1, 0), (1, 0)
 
     def move(self, pos: Position) -> Position:
-        match self:
-            case self.LEFT: return (pos[0], pos[1] - 1)
-            case self.RIGHT: return (pos[0], pos[1] + 1)
-            case self.UP: return (pos[0] - 1, pos[1])
-            case self.DOWN: return (pos[0] + 1, pos[1])
+        return (pos[0] + self.value[0], pos[1] + self.value[1])
 
 
 #################################################
@@ -27,28 +22,29 @@ class Direction(Enum):
 with open("2022/data/day12.txt", "r") as f:
     data = [row.strip() for row in f.readlines()]
     data = {
-        (i, j): ORDER.index(cell)
+        (i, j): cell
         for i, row in enumerate(data)
         for j, cell in enumerate(row)
     }
+    # Find start and end points
+    start = next(pos for pos, cell in data.items() if cell == 'S')
+    end = next(pos for pos, cell in data.items() if cell == 'E')
+    # Update with elevation
+    data[start] = 'a'
+    data[end] = 'z'
+    # Transform text to height number
+    data = {pos: ORDER.index(cell) for pos, cell in data.items()}
+
 
 #################################################
 # Process
 #################################################
-start = next(pos for pos, cell in data.items() if cell == 1)
-end = next(pos for pos, cell in data.items() if cell == 0)
-
-
 def find_trail_reverse(end: Position, start: Set[Position], data: Dict[Position, int]) -> int:
     seen = set()
     queue = [(0, end)]
     while True:
-        # In case of dead end, no solution possible
-        if len(queue) == 0:
-            # return number higher than possible, so it won't be selected as best path
-            return len(data) + 1
         # Get lowest cost in queue
-        cost, current = heapq.heappop(queue)
+        cost, current = queue.pop(0)
         if current in seen:
             continue
         seen.add(current)
@@ -66,13 +62,13 @@ def find_trail_reverse(end: Position, start: Set[Position], data: Dict[Position,
 
         # Add to queue
         for option in options:
-            heapq.heappush(queue, (cost + 1, option))
+            queue.append((cost + 1, option))
             if option in start:
                 return cost + 1
 
 
 output1 = find_trail_reverse(end, {start}, data)
-candidates = set(pos for pos, cell in data.items() if cell in [1, 2])
+candidates = set(pos for pos, cell in data.items() if cell == 0)
 output2 = find_trail_reverse(end, candidates, data)
 
 #################################################
